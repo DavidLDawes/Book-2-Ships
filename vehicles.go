@@ -8,12 +8,30 @@ import (
 	"fyne.io/fyne/widget"
 )
 
+type vehicleDef struct {
+	vehicleName string
+	vehicleTons int
+	vehicleCost float32
+}
+
+var vehicleDefs = [...]vehicleDef{
+	vehicleDef{"Launch", 20, 14.0},
+	vehicleDef{"Boat", 30, 16.0},
+	vehicleDef{"Pinnace", 40, 20.0},
+	vehicleDef{"Shuttle", 95, 33.0},
+	vehicleDef{"Modular Cutter", 80, 20.0},
+	vehicleDef{"Light Fighter", 10, 18.0},
+	vehicleDef{"Medium Fighter", 23, 40.0},
+	vehicleDef{"Heavy Fighter", 55, 96.0},
+}
+
+
 type vehicleCounts struct {
-	atvWheel    int
+/*	atvWheel    int
 	atvTrack    int
 	airRaft     int
 	speeder     int
-	gCarrier    int
+	gCarrier    int */
 	launch      int
 	shipsBoat   int
 	pinnace     int
@@ -27,11 +45,11 @@ type vehicleCounts struct {
 }
 
 var vehicles = vehicleCounts{
-	atvWheel:    0,
+/*	atvWheel:    0,
 	atvTrack:    0,
 	airRaft:     0,
 	speeder:     0,
-	gCarrier:    0,
+	gCarrier:    0, */
 	launch:      0,
 	shipsBoat:   0,
 	pinnace:     0,
@@ -56,11 +74,11 @@ var (
 )
 
 var (
-	atvWheelSelect    *widget.Select
+/*	atvWheelSelect    *widget.Select
 	atvTrackSelect    *widget.Select
 	airRaftSelect     *widget.Select
 	speederSelect     *widget.Select
-	gCarrierSelect    *widget.Select
+	gCarrierSelect    *widget.Select */
 	launchSelect      *widget.Select
 	shipsBoatSelect   *widget.Select
 	pinnaceSelect     *widget.Select
@@ -76,11 +94,11 @@ var (
 var ignorevehicles = false
 
 func vehiclesInit() {
-	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
+/*	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
 	atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
 	airRaftSelect = widget.NewSelect(weaponLevel, airRaftChanged)
 	speederSelect = widget.NewSelect(weaponLevel, speederChanged)
-	gCarrierSelect = widget.NewSelect(weaponLevel, gCarrierChanged)
+	gCarrierSelect = widget.NewSelect(weaponLevel, gCarrierChanged) */
 	launchSelect = widget.NewSelect(weaponLevel, launchChanged)
 	shipsBoatSelect = widget.NewSelect(weaponLevel, shipsBoatChanged)
 	pinnaceSelect = widget.NewSelect(weaponLevel, pinnaceChanged)
@@ -93,11 +111,11 @@ func vehiclesInit() {
 	hvyFigherSelect = widget.NewSelect(weaponLevel, hvyFighterChanged)
 
 	vehicleSettings = widget.NewForm(
-		widget.NewFormItem("ATV, Wheeled", atvWheelSelect),
+/*		widget.NewFormItem("ATV, Wheeled", atvWheelSelect),
 		widget.NewFormItem("ATV, Tracked", atvTrackSelect),
 		widget.NewFormItem("Air/Raft", airRaftSelect),
 		widget.NewFormItem("Speeder", speederSelect),
-		widget.NewFormItem("GCarrier", gCarrierSelect),
+		widget.NewFormItem("GCarrier", gCarrierSelect), */
 		widget.NewFormItem("Launch", launchSelect),
 		widget.NewFormItem("Ship's Boat", shipsBoatSelect),
 		widget.NewFormItem("Pinnace", pinnaceSelect),
@@ -113,6 +131,7 @@ func vehiclesInit() {
 	weapons.weaponsSelectInit()
 }
 
+/*
 func atvWheelChanged(value string) {
 	if !ignorevehicles {
 		atvw, err := strconv.Atoi(value)
@@ -187,6 +206,7 @@ func gCarrierChanged(value string) {
 		}
 	}
 }
+*/
 
 func launchChanged(value string) {
 	if !ignorevehicles {
@@ -338,11 +358,13 @@ func hvyFighterChanged(value string) {
 	}
 }
 
+/*
 func buildSurface() {
 	surface := getSurfaceVehicles()
 	detailSurfaceVehicles.SetText(surface)
 	detailSurfaceVehicles.Refresh()
 }
+*/
 
 func buildUtility() {
 	utility := getUtilityVehicles()
@@ -357,7 +379,7 @@ func buildHighEnd() {
 }
 
 func buildVehicles() {
-	buildSurface()
+	//buildSurface()
 	buildUtility()
 	buildHighEnd()
 	setVehicleDetails()
@@ -365,12 +387,24 @@ func buildVehicles() {
 }
 
 func countVehicles() int {
-	result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCarrier + vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat + vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
+	// result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCarrier +
+	//     vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
+	//     vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
+	result := vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
+		vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
+
 	return result
 }
 
 func vehicleTonsUsed() int {
-	result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 + vehicles.gCarrier*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 + vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 + vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
+	// result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 +
+	//     vehicles.gCarrier*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 +
+	//     vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 +
+	//     vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
+	result := vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 + vehicles.cutter*80 +
+		vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 + vehicles.ltFighter*10 +
+		vehicles.medFighter*30 + vehicles.hvyFighter*50
+
 	return result
 }
 
@@ -390,6 +424,7 @@ func setVehicleDetails() {
 	vehicleDetails.Refresh()
 }
 
+/*
 func getSurfaceVehicles() string {
 	surface := ""
 	if vehicles.atvWheel > 0 {
@@ -409,6 +444,7 @@ func getSurfaceVehicles() string {
 	}
 	return surface
 }
+*/
 
 func getUtilityVehicles() string {
 	utility := ""

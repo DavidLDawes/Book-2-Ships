@@ -7,10 +7,11 @@ import (
 )
 
 type drive struct {
-	code string // A (smallest) to Z (biggest)
-	tons int    // tonnage used by the engine
-	cost int    // in MCr
-	perf int    // 0 (none) or 1-6 for J-1 to J-6
+	code        string // A (smallest) to Z (biggest)
+	tons        int    // tonnage used by the engine
+	cost        int    // in MCr
+	perf        int
+	driveSelect *widget.Select
 }
 
 type driveDetails struct {
@@ -109,10 +110,6 @@ var engineDetails = []engineDetail{
 	{TrvIndex[23], 120, 230, 47, 96, 73, 192},
 }
 
-func (d driveDetails) buildDrives() (*widget.Box, *widget.Form) {
-	return d.panel.details[0], d.panel.settings[0]
-}
-
 var (
 	defaultDrive    = defaultDriveCode
 	defaultIndex    = 1
@@ -129,22 +126,23 @@ var (
 	jumpSelect     = widget.NewSelect(TrvIndex, nothing)
 	maneuverSelect = widget.NewSelect(TrvIndex, nothing)
 	powerSelect    = widget.NewSelect(TrvIndex, nothing)
+	driveForm = widget.NewForm(
+				widget.NewFormItem("Jump", jumpSelect),
+				widget.NewFormItem("Maneuver", maneuverSelect),
+				widget.NewFormItem("Power", powerSelect),
+	)
 )
 
 var drives = driveDetails{
-	j:    drive{defaultDrive, engineDetails[defaultIndex].jTons, engineDetails[defaultIndex].jCost, 2},
-	m:    drive{defaultDrive, engineDetails[defaultIndex].mTons, engineDetails[defaultIndex].mCost, 2},
-	p:    drive{defaultDrive, engineDetails[defaultIndex].pTons, engineDetails[defaultIndex].pCost, 2},
+	j:    drive{defaultDrive, engineDetails[defaultIndex].jTons, engineDetails[defaultIndex].jCost, 2, jumpSelect},
+	m:    drive{defaultDrive, engineDetails[defaultIndex].mTons, engineDetails[defaultIndex].mCost, 2, maneuverSelect},
+	p:    drive{defaultDrive, engineDetails[defaultIndex].pTons, engineDetails[defaultIndex].pCost, 2, powerSelect},
 	fuel: 22,
 	panel: panel{
 		change:  nil,
 		selects: nil,
 		settings: []*widget.Form{
-			widget.NewForm(
-				widget.NewFormItem("Jump", jumpSelect),
-				widget.NewFormItem("Maneuver", maneuverSelect),
-				widget.NewFormItem("Power", powerSelect),
-			),
+			driveForm,
 		},
 		details: []*widget.Box{
 			driveDetailsBox,
@@ -152,20 +150,20 @@ var drives = driveDetails{
 	},
 }
 
+
 func (d *driveDetails) init() {
+	jumpSelect.PlaceHolder = defaultDrive
 	jumpSelect.OnChanged = d.jumpChanged
-	maneuverSelect = widget.NewSelect(TrvIndex, d.maneuverChanged)
-	powerSelect = widget.NewSelect(TrvIndex, d.powerChanged)
+
+	maneuverSelect.PlaceHolder = defaultDrive
+	maneuverSelect.OnChanged = d.maneuverChanged
+
+	powerSelect.PlaceHolder = defaultDrive
+	powerSelect.OnChanged = d.powerChanged
 
 	drives.panel.selects = []*widget.Select{
-		widget.NewSelect(TrvIndex, d.jumpChanged),
-		widget.NewSelect(TrvIndex, d.maneuverChanged),
-		widget.NewSelect(TrvIndex, d.powerChanged),
+		jumpSelect, maneuverSelect, powerSelect,
 	}
-
-	drives.panel.selects[0].Selected = TrvIndex[1]
-	drives.panel.selects[1].Selected = TrvIndex[1]
-	drives.panel.selects[2].Selected = TrvIndex[1]
 
 	drives.panel.details = []*widget.Box{
 		driveDetailsBox,
@@ -175,27 +173,38 @@ func (d *driveDetails) init() {
 	d.powerChanged(defaultDrive)
 }
 
+
 func (d *driveDetails) startup() {
 	jumpSelect.OnChanged = d.jumpChanged
 	maneuverSelect.OnChanged = d.maneuverChanged
 	powerSelect.OnChanged = d.powerChanged
 }
 
-func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool) (good bool) {
+func (d driveDetails) buildDrives() (*widget.Box, *widget.Form) {
+	return driveDetailsBox, driveForm
+}
+
+func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool,
+	) (good bool, effect int, newDrive string) {
+  	hIndex := getIndexFromHull(hull.code)
+	if checkPower {
+		// If we are checking power (i.e. Jump orManeuver) then power == max, cap it there
+		if engineCode > d.p.code {
+			engineCode = d.p.code
+			jumpSelect.SetSelected(fmt.Sprintf("%s", engineCode))
+		}
+	}
+
 	dIndex := d.getIndexFromDrive(engineCode)
 	good = false
-	if dIndex > -1 {
+	if hIndex > -1 && dIndex > -1 {
 		for _, fx := range engineEffects[dIndex].effects {
-			if fx.hullIndex == dIndex {
+			if fx.hullIndex == hIndex {
 				good = true
-				break
-			}
-		}
+				effect = fx.effect
+				newDrive = engineCode
 
-		if checkPower {
-			if engineCode > d.p.code {
-				engineCode = d.p.code
-				jumpSelect.SetSelected(fmt.Sprintf("%s", engineCode))
+				break
 			}
 		}
 	}
@@ -205,72 +214,83 @@ func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool)
 
 func (d *driveDetails) jumpChanged(value string) {
 	jumpSelect.OnChanged = nothing
-	if d.checkDrive(value, d.j, true) {
+	valid, effect, fixedDrive := d.checkDrive(value, d.j, true)
+	if valid {
 		d.j.cost = engineDetails[d.getIndexFromDrive(value)].jCost
 		d.j.tons = engineDetails[d.getIndexFromDrive(value)].jTons
+		d.j.code = fixedDrive
+		d.j.perf = effect
 		// StarShip.computer = computer[jump]
 
 		d.buildJump()
+		d.buildFuel()
 		berths.buildCrew()
 		// buildTotal()
 	}
+	jumpSelect.SetSelected(fmt.Sprintf("%s", d.j.code))
+	jumpSelect.Refresh()
 	jumpSelect.OnChanged = d.jumpChanged
-}
-
-func (d *driveDetails) setEngineDetails() {
-	d.j.cost = engineDetails[d.getIndexFromDrive(defaultDrive)].jCost
-	d.j.tons = engineDetails[d.getIndexFromDrive(defaultDrive)].jTons
 }
 
 func (d *driveDetails) maneuverChanged(value string) {
 	maneuverSelect.OnChanged = nothing
-	if d.checkDrive(value, d.m, true) {
+	valid, effect, fixedDrive := d.checkDrive(value, d.m, true)
+	if valid {
+		d.m.code = fixedDrive
 		d.m.cost = engineDetails[d.getIndexFromDrive(value)].mCost
 		d.m.tons = engineDetails[d.getIndexFromDrive(value)].mTons
-		// StarShip.computer = computer[jump]
+		d.m.perf = effect
 
 		d.buildManeuver()
 		berths.buildCrew()
 		// buildTotal()
 	}
+	maneuverSelect.SetSelected(fmt.Sprintf("%s", d.m.code))
+	maneuverSelect.Refresh()
 	maneuverSelect.OnChanged = d.maneuverChanged
 }
 
 func (d *driveDetails) powerChanged(value string) {
-	maneuverSelect.OnChanged = nothing
-	if d.checkDrive(value, d.p, false) {
-		d.m.cost = engineDetails[d.getIndexFromDrive(value)].pCost
-		d.m.tons = engineDetails[d.getIndexFromDrive(value)].pTons
-		// StarShip.computer = computer[jump]
+	powerSelect.OnChanged = nothing
+	valid, effect, fixedDrive := d.checkDrive(value, d.p, false)
 
-		d.buildManeuver()
+	if valid {
+		d.p.code = fixedDrive
+		d.p.cost = engineDetails[d.getIndexFromDrive(value)].pCost
+		d.p.tons = engineDetails[d.getIndexFromDrive(value)].pTons
+		d.p.perf = effect
+
+		d.buildPower()
 		berths.buildCrew()
 		// buildTotal()
 	}
-	d.buildPower()
-	berths.buildCrew()
-	// buildTotal()
+	powerSelect.SetSelected(fmt.Sprintf("%s", d.p.code))
+	powerSelect.Refresh()
 	powerSelect.OnChanged = d.powerChanged
 }
 
 func (d *driveDetails) buildJump() {
-	detailJump.SetText(fmt.Sprintf("Jump: %d, tons: %d", d.j.perf, d.j.tons))
+	detailJump.SetText(fmt.Sprintf("Jump Drive: %s J-%d, tons: %d, cost: %d",
+		d.j.code, d.j.perf, d.j.tons, d.j.cost))
 	detailJump.Refresh()
-	//	detailComputer.SetText(fmt.Sprintf("computer %d: %d tons", StarShip.jump, int(armor()*float32(computer[StarShip.jump-1])+.9999)))
+	//	detailComputer.SetText(fmt.Sprintf("computer %d: %d tons",
+	//    StarShip.jump, int(armor()*float32(computer[StarShip.jump-1])+.9999)))
 	//	detailComputer.Refresh()
-	//	d.setEngineers()
-	//	d.refreshEngineeringCrew()
+	berths.setEngineers()
+	berths.refreshEngineeringCrew()
 }
 
 func (d *driveDetails) buildManeuver() {
-	detailManeuver.SetText(fmt.Sprintf("Maneuver: %d, tons: %d", d.m.tons, d.m.tons))
+	detailManeuver.SetText(fmt.Sprintf("Maneuver Drive: %s M-%d, tons: %d, cost: %d",
+		d.m.code, d.m.perf, d.m.tons, d.m.cost))
 	detailManeuver.Refresh()
 	berths.setEngineers()
 	berths.refreshEngineeringCrew()
 }
 
 func (d *driveDetails) buildPower() {
-	detailPower.SetText(fmt.Sprintf("Power: %d, tons: %df", d.p.perf, d.p.tons))
+	detailPower.SetText(fmt.Sprintf("Power Plant: %s P-%d, tons: %d, cost %d",
+		d.p.code, d.p.perf, d.p.tons, d.p.cost))
 	detailPower.Refresh()
 	berths.setEngineers()
 	berths.refreshEngineeringCrew()
@@ -278,7 +298,7 @@ func (d *driveDetails) buildPower() {
 
 func (d *driveDetails) buildFuel() {
 	d.fuel = float32(hull.tons) * float32(d.p.perf) / 10.0
-	detailJumpFuel.SetText(fmt.Sprintf("Jump fuel: %f", d.fuel))
+	detailJumpFuel.SetText(fmt.Sprintf("Jump fuel: %.1f", d.fuel))
 	detailJumpFuel.Refresh()
 }
 

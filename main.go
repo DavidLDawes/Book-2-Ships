@@ -55,10 +55,10 @@ func main() {
 	a := app.New()
 
 	hull.init()
+	drives.init()
 	buildDetails()
 	weapons.weaponsInit()
 	berths.berthsInit()
-	drives.init()
 	// shipInit()
 	vehiclesInit()
 
@@ -86,7 +86,7 @@ func main() {
 		widget.NewVBox(widget.NewLabel("Drives"), mainPanel.settings[0], widget.NewLabel("Berths & Crew"),
 			berthSettings, widget.NewLabel("Weapons"), weaponSettings),
 		widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
-		widget.NewVBox(hullDetails, weaponDetails, berthDetails, vehicleDetails))
+		widget.NewVBox(hullDetails, driveDetailsBox, weaponDetails, berthDetails, vehicleDetails))
 	// widget.NewVBox(hullDetails, berthDetails)))
 
 	w.SetContent(ui)
