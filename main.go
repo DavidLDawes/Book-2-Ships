@@ -56,11 +56,11 @@ func main() {
 
 	hull.init()
 	drives.init()
-	buildDetails()
 	weapons.weaponsInit()
 	berths.berthsInit()
 	// shipInit()
 	vehiclesInit()
+	buildDetails()
 
 	w, mainPanel := a.NewWindow("Designer"), panel{
 		change:   nothingAtAll,
@@ -83,7 +83,7 @@ func main() {
 	//  	widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
 
 	ui := widget.NewHBox(
-		widget.NewVBox(widget.NewLabel("Drives"), mainPanel.settings[0], widget.NewLabel("Berths & Crew"),
+		widget.NewVBox(widget.NewLabel("Ship"), mainPanel.settings[0], widget.NewLabel("Berths & Crew"),
 			berthSettings, widget.NewLabel("Weapons"), weaponSettings),
 		widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
 		widget.NewVBox(hullDetails, driveDetailsBox, weaponDetails, berthDetails, vehicleDetails))
