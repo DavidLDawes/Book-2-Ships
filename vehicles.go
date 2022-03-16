@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"fyne.io/fyne"
 	"fyne.io/fyne/widget"
 )
 
@@ -15,22 +14,28 @@ type vehicleDef struct {
 }
 
 var vehicleDefs = [...]vehicleDef{
+	{"Wheeled ATV", 10, 0.03},
+	{"Tracked ATV", 10, 0.03},
+	{"Air Raft", 4, 0.6},
+	{"Speeder", 6, 1.0},
 	{"Launch", 20, 14.0},
 	{"Boat", 30, 16.0},
 	{"Pinnace", 40, 20.0},
+	{"Modular Cutter", 50, 28.0},
+	{"Slow Boat", 30, 15.0},
+	{"Slow Pinnace", 40, 10.0},
 	{"Shuttle", 95, 33.0},
-	{"Modular Cutter", 80, 20.0},
 	{"Light Fighter", 10, 18.0},
 	{"Medium Fighter", 23, 40.0},
 	{"Heavy Fighter", 55, 96.0},
 }
 
-type vehicleCounts struct {
-	/*	atvWheel    int
-		atvTrack    int
-		airRaft     int
-		speeder     int
-		gCarrier    int */
+type vehicleDetails struct {
+	atvWheel    int
+	atvTrack    int
+	airRaft     int
+	speeder     int
+	gCar        int
 	launch      int
 	shipsBoat   int
 	pinnace     int
@@ -43,382 +48,373 @@ type vehicleCounts struct {
 	hvyFighter  int
 }
 
-var vehicles = vehicleCounts{
-	/*	atvWheel:    0,
+var (
+	vehicles = vehicleDetails{
+		atvWheel:    0,
 		atvTrack:    0,
 		airRaft:     0,
 		speeder:     0,
-		gCarrier:    0, */
-	launch:      0,
-	shipsBoat:   0,
-	pinnace:     0,
-	cutter:      0,
-	slowBoat:    0,
-	slowPinnace: 0,
-	shuttle:     0,
-	ltFighter:   0,
-	medFighter:  0,
-	hvyFighter:  0,
-}
+		gCar:        0,
+		launch:      0,
+		shipsBoat:   0,
+		pinnace:     0,
+		cutter:      0,
+		slowBoat:    0,
+		slowPinnace: 0,
+		shuttle:     0,
+		ltFighter:   0,
+		medFighter:  0,
+		hvyFighter:  0,
+	}
 
-var (
-	detailSurfaceVehicles *widget.Label = widget.NewLabel("")
-	detailUtilityVehicles *widget.Label = widget.NewLabel("")
-	detailHighEndVehicles *widget.Label = widget.NewLabel("")
-)
+	atvW              = widget.NewLabel("Wheeled ATV: 0")
+	atvT              = widget.NewLabel("Tracked ATV: 0")
+	airRaft           = widget.NewLabel("Air Raft: 0")
+	speeder           = widget.NewLabel("Speeder: 0")
+	gCar              = widget.NewLabel("Grav Car: 0")
+	launch            = widget.NewLabel("Launch: 0")
+	boat              = widget.NewLabel("Ship's Boat: 0")
+	pinnace           = widget.NewLabel("Pinnace: 0")
+	cutter            = widget.NewLabel("Modular CVutter: 0")
+	slowBoat          = widget.NewLabel("Slow Boat: 0")
+	slowPinnace       = widget.NewLabel("Slow Pinnace: 0")
+	shuttle           = widget.NewLabel("Shuttle: 0")
+	ltFighter         = widget.NewLabel("Light Fighter: 0")
+	medFighter        = widget.NewLabel("Medium Fighter: 0")
+	hvyFighter        = widget.NewLabel("Heavy Fighter: 0")
+	vehicleDetailsBox = widget.NewVBox(atvW, atvT, speeder, gCar,
+		launch, boat, pinnace, cutter, slowBoat, slowPinnace, shuttle,
+		ltFighter, medFighter, hvyFighter)
 
-var (
-	vehicleDetails  *widget.Box = widget.NewVBox()
-	vehicleSettings *widget.Form
-)
+	atvWheelSelect    = widget.NewSelect(vehicleCount, nothing)
+	atvTrackSelect    = widget.NewSelect(vehicleCount, nothing)
+	airRaftSelect     = widget.NewSelect(vehicleCount, nothing)
+	speederSelect     = widget.NewSelect(vehicleCount, nothing)
+	gCarrierSelect    = widget.NewSelect(vehicleCount, nothing)
+	launchSelect      = widget.NewSelect(vehicleCount, nothing)
+	shipsBoatSelect   = widget.NewSelect(vehicleCount, nothing)
+	pinnaceSelect     = widget.NewSelect(vehicleCount, nothing)
+	cutterSelect      = widget.NewSelect(vehicleCount, nothing)
+	slowBoatSelect    = widget.NewSelect(vehicleCount, nothing)
+	slowPinnaceSelect = widget.NewSelect(vehicleCount, nothing)
+	shuttleSelect     = widget.NewSelect(vehicleCount, nothing)
+	ltFigherSelect    = widget.NewSelect(vehicleCount, nothing)
+	medFigherSelect   = widget.NewSelect(vehicleCount, nothing)
+	hvyFigherSelect   = widget.NewSelect(vehicleCount, nothing)
 
-var (
-	/*	atvWheelSelect    *widget.Select
-		atvTrackSelect    *widget.Select
-		airRaftSelect     *widget.Select
-		speederSelect     *widget.Select
-		gCarrierSelect    *widget.Select */
-	launchSelect      *widget.Select
-	shipsBoatSelect   *widget.Select
-	pinnaceSelect     *widget.Select
-	cutterSelect      *widget.Select
-	slowBoatSelect    *widget.Select
-	slowPinnaceSelect *widget.Select
-	shuttleSelect     *widget.Select
-	ltFigherSelect    *widget.Select
-	medFigherSelect   *widget.Select
-	hvyFigherSelect   *widget.Select
-)
+	atvWheelItem    = widget.NewFormItem("Wheeled ATV", atvWheelSelect)
+	atvTrackItem    = widget.NewFormItem("Wheeled ATV", atvTrackSelect)
+	airRaftItem     = widget.NewFormItem("Wheeled ATV", airRaftSelect)
+	speederItem     = widget.NewFormItem("Wheeled ATV", speederSelect)
+	gCarrierItem    = widget.NewFormItem("Wheeled ATV", gCarrierSelect)
+	launchItem      = widget.NewFormItem("Wheeled ATV", launchSelect)
+	shipsBoatItem   = widget.NewFormItem("Wheeled ATV", shipsBoatSelect)
+	pinnaceItem     = widget.NewFormItem("Wheeled ATV", pinnaceSelect)
+	cutterItem      = widget.NewFormItem("Wheeled ATV", cutterSelect)
+	slowBoatItem    = widget.NewFormItem("Wheeled ATV", slowBoatSelect)
+	slowPinnaceItem = widget.NewFormItem("Wheeled ATV", slowPinnaceSelect)
+	shuttleItem     = widget.NewFormItem("Wheeled ATV", shuttleSelect)
+	ltFigherItem    = widget.NewFormItem("Wheeled ATV", ltFigherSelect)
+	medFigherItem   = widget.NewFormItem("Wheeled ATV", medFigherSelect)
+	hvyFigherItem   = widget.NewFormItem("Wheeled ATV", hvyFigherSelect)
 
-var ignorevehicles = false
-
-func vehiclesInit() {
-	/*	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
-		atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
-		airRaftSelect = widget.NewSelect(weaponLevel, airRaftChanged)
-		speederSelect = widget.NewSelect(weaponLevel, speederChanged)
-		gCarrierSelect = widget.NewSelect(weaponLevel, gCarrierChanged) */
-	launchSelect = widget.NewSelect(weaponLevel, launchChanged)
-	shipsBoatSelect = widget.NewSelect(weaponLevel, shipsBoatChanged)
-	pinnaceSelect = widget.NewSelect(weaponLevel, pinnaceChanged)
-	cutterSelect = widget.NewSelect(weaponLevel, cutterChanged)
-	slowBoatSelect = widget.NewSelect(weaponLevel, slowBoatChanged)
-	slowPinnaceSelect = widget.NewSelect(weaponLevel, slowPinnaceChanged)
-	shuttleSelect = widget.NewSelect(weaponLevel, shuttleChanged)
-	ltFigherSelect = widget.NewSelect(weaponLevel, ltFigherChanged)
-	medFigherSelect = widget.NewSelect(weaponLevel, medFighterChanged)
-	hvyFigherSelect = widget.NewSelect(weaponLevel, hvyFighterChanged)
-
-	vehicleSettings = widget.NewForm(
-		/*		widget.NewFormItem("ATV, Wheeled", atvWheelSelect),
-				widget.NewFormItem("ATV, Tracked", atvTrackSelect),
-				widget.NewFormItem("Air/Raft", airRaftSelect),
-				widget.NewFormItem("Speeder", speederSelect),
-				widget.NewFormItem("GCarrier", gCarrierSelect), */
-		widget.NewFormItem("Launch", launchSelect),
-		widget.NewFormItem("Ship's Boat", shipsBoatSelect),
-		widget.NewFormItem("Pinnace", pinnaceSelect),
-		widget.NewFormItem("Cutter", cutterSelect),
-		widget.NewFormItem("Slow Boat", slowBoatSelect),
-		widget.NewFormItem("Slow Pinnace", slowPinnaceSelect),
-		widget.NewFormItem("Shuttle", shuttleSelect),
-		widget.NewFormItem("Light Fighter", ltFigherSelect),
-		widget.NewFormItem("Medium Fighter", medFigherSelect),
-		widget.NewFormItem("Heavy Fighter", hvyFigherSelect),
+	vehicleForm = widget.NewForm(
+		atvWheelItem, atvTrackItem, airRaftItem, speederItem, gCarrierItem,
+		launchItem, shipsBoatItem, pinnaceItem, cutterItem, slowBoatItem, slowPinnaceItem, shuttleItem,
+		ltFigherItem, medFigherItem, hvyFigherItem,
 	)
+)
+
+func (v *vehicleDetails) init(form *widget.Form, box *widget.Box) {
+	atvWheelSelect.SetSelected("0")
+	atvWheelSelect.OnChanged = v.atvWheelChanged
+
+	atvTrackSelect.SetSelected("0")
+	atvTrackSelect.OnChanged = v.atvTrackChanged
+
+	airRaftSelect.SetSelected("0")
+	airRaftSelect.OnChanged = v.airRaftChanged
+
+	speederSelect.SetSelected("0")
+	speederSelect.OnChanged = v.speederChanged
+
+	gCarrierSelect.SetSelected("0")
+	gCarrierSelect.OnChanged = v.gCarrierChanged
+
+	launchSelect.SetSelected("0")
+	launchSelect.OnChanged = v.launchChanged
+
+	shipsBoatSelect.SetSelected("0")
+	shipsBoatSelect.OnChanged = v.shipsBoatChanged
+
+	pinnaceSelect.SetSelected("0")
+	pinnaceSelect.OnChanged = v.pinnaceChanged
+
+	cutterSelect.SetSelected("0")
+	cutterSelect.OnChanged = v.cutterChanged
+
+	slowBoatSelect.SetSelected("0")
+	slowBoatSelect.OnChanged = v.slowBoatChanged
+
+	slowPinnaceSelect.SetSelected("0")
+	slowPinnaceSelect.OnChanged = v.slowPinnaceChanged
+
+	shuttleSelect.SetSelected("0")
+	shuttleSelect.OnChanged = v.shuttleChanged
+
+	ltFigherSelect.SetSelected("0")
+	ltFigherSelect.OnChanged = v.ltFigherChanged
+
+	medFigherSelect.SetSelected("0")
+	medFigherSelect.OnChanged = v.medFighterChanged
+
+	hvyFigherSelect.SetSelected("0")
+	hvyFigherSelect.OnChanged = v.hvyFighterChanged
+
+	box.Children = append(box.Children, vehicleDetailsBox)
+
+	atvW.Hide()
+	atvT.Hide()
+	airRaft.Hide()
+	speeder.Hide()
+	gCar.Hide()
+	launch.Hide()
+	boat.Hide()
+	pinnace.Hide()
+	cutter.Hide()
+	slowBoat.Hide()
+	slowPinnace.Hide()
+	shuttle.Hide()
+	ltFighter.Hide()
+	medFighter.Hide()
+	hvyFighter.Hide()
 }
 
-/*
-func atvWheelChanged(value string) {
-	if !ignorevehicles {
-		atvw, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.atvWheel = atvw
-			ignorevehicles = true
-			buildSurface()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) atvWheelChanged(value string) {
+	atvw, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.atvWheel = atvw
+		if atvw > 0 {
+			atvW.SetText(fmt.Sprintf("Wheeled ATV: %s", value))
+			atvW.Show()
+		} else {
+			atvW.SetText("")
+			atvW.Hide()
 		}
 	}
 }
 
-func atvTrackChanged(value string) {
-	if !ignorevehicles {
-		atvt, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.atvTrack = atvt
-			ignorevehicles = true
-			buildSurface()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) atvTrackChanged(value string) {
+	atvt, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.atvTrack = atvt
+		if atvt > 0 {
+			atvT.SetText(fmt.Sprintf("Tracked ATV: %s", value))
+			atvT.Show()
+		} else {
+			atvT.SetText("")
+			atvT.Hide()
 		}
 	}
 }
 
-func airRaftChanged(value string) {
-	if !ignorevehicles {
-		air, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.airRaft = air
-			ignorevehicles = true
-			buildSurface()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) airRaftChanged(value string) {
+	air, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.airRaft = air
+		if air > 0 {
+			airRaft.SetText(fmt.Sprintf("Tracked ATV: %s", value))
+			airRaft.Show()
+		} else {
+			airRaft.SetText("")
+			airRaft.Hide()
 		}
 	}
 }
 
-func speederChanged(value string) {
-	if !ignorevehicles {
-		spdr, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.speeder = spdr
-			ignorevehicles = true
-			buildSurface()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) speederChanged(value string) {
+	spdr, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.speeder = spdr
+		if spdr > 0 {
+			speeder.SetText(fmt.Sprintf("Speeder: %s", value))
+			speeder.Show()
+		} else {
+			speeder.SetText("")
+			speeder.Hide()
 		}
 	}
 }
 
-func gCarrierChanged(value string) {
-	if !ignorevehicles {
-		gc, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.gCarrier = gc
-			ignorevehicles = true
-			buildSurface()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
-		}
-	}
-}
-*/
-
-func launchChanged(value string) {
-	if !ignorevehicles {
-		launch, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.launch = launch
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) gCarrierChanged(value string) {
+	gc, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.gCar = gc
+		if gc > 0 {
+			gCar.SetText(value)
+			gCar.Show()
+		} else {
+			gCar.SetText("0")
+			gCar.Hide()
 		}
 	}
 }
 
-func shipsBoatChanged(value string) {
-	if !ignorevehicles {
-		sboat, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.shipsBoat = sboat
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) launchChanged(value string) {
+	launches, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.launch = launches
+		if launches > 0 {
+			launch.SetText(value)
+			launch.Show()
+		} else {
+			launch.SetText("0")
+			launch.Hide()
 		}
 	}
 }
 
-func pinnaceChanged(value string) {
-	if !ignorevehicles {
-		pinnace, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.pinnace = pinnace
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) shipsBoatChanged(value string) {
+	sboat, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.shipsBoat = sboat
+		if sboat > 0 {
+			slowBoat.SetText(value)
+			slowBoat.Show()
+		} else {
+			slowBoat.SetText("0")
+			slowBoat.Hide()
 		}
 	}
 }
 
-func cutterChanged(value string) {
-	if !ignorevehicles {
-		cutter, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.cutter = cutter
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) pinnaceChanged(value string) {
+	pinnaceCount, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.pinnace = pinnaceCount
+		if pinnaceCount > 0 {
+			pinnace.SetText(value)
+			pinnace.Show()
+		} else {
+			pinnace.SetText("0")
+			pinnace.Hide()
 		}
 	}
 }
 
-func slowBoatChanged(value string) {
-	if !ignorevehicles {
-		sloboat, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.slowBoat = sloboat
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) cutterChanged(value string) {
+	cutterCount, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.cutter = cutterCount
+		if cutterCount > 0 {
+			cutter.SetText(value)
+			cutter.Show()
+		} else {
+			cutter.SetText("0")
+			cutter.Hide()
 		}
 	}
 }
 
-func slowPinnaceChanged(value string) {
-	if !ignorevehicles {
-		slopin, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.slowPinnace = slopin
-			ignorevehicles = true
-			buildUtility()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) slowBoatChanged(value string) {
+	sloboat, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.slowBoat = sloboat
+		if sloboat > 0 {
+			slowBoat.SetText(value)
+			slowBoat.Show()
+		} else {
+			slowBoat.SetText("0")
+			slowBoat.Hide()
 		}
 	}
 }
 
-func shuttleChanged(value string) {
-	if !ignorevehicles {
-		shuttle, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.shuttle = shuttle
-			ignorevehicles = true
-			buildHighEnd()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) slowPinnaceChanged(value string) {
+	slopin, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.slowPinnace = slopin
+		if slopin > 0 {
+			slowPinnace.SetText(value)
+			slowPinnace.Show()
+		} else {
+			slowPinnace.SetText("0")
+			slowPinnace.Hide()
 		}
 	}
 }
 
-func ltFigherChanged(value string) {
-	if !ignorevehicles {
-		lftr, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.ltFighter = lftr
-			ignorevehicles = true
-			buildHighEnd()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) shuttleChanged(value string) {
+	shuttleCount, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.shuttle = shuttleCount
+		if shuttleCount > 0 {
+			shuttle.SetText(value)
+			shuttle.Show()
+		} else {
+			shuttle.SetText("0")
+			shuttle.Hide()
 		}
 	}
 }
 
-func medFighterChanged(value string) {
-	if !ignorevehicles {
-		mftr, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.medFighter = mftr
-			ignorevehicles = true
-			buildHighEnd()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) ltFigherChanged(value string) {
+	lftr, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.ltFighter = lftr
+		if lftr > 0 {
+			ltFighter.SetText(value)
+			ltFighter.Show()
+		} else {
+			ltFighter.SetText("0")
+			ltFighter.Hide()
 		}
 	}
 }
 
-func hvyFighterChanged(value string) {
-	if !ignorevehicles {
-		hftr, err := strconv.Atoi(value)
-		if err == nil {
-			vehicles.hvyFighter = hftr
-			ignorevehicles = true
-			buildHighEnd()
-			setVehicleDetails()
-			berths.buildCrew()
-			// buildTotal()
-			ignorevehicles = false
+func (v *vehicleDetails) medFighterChanged(value string) {
+	mftr, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.medFighter = mftr
+		if mftr > 0 {
+			medFighter.SetText(value)
+			medFighter.Show()
+		} else {
+			medFighter.SetText("0")
+			medFighter.Hide()
 		}
 	}
 }
 
-/*
-func buildSurface() {
-	surface := getSurfaceVehicles()
-	detailSurfaceVehicles.SetText(surface)
-	detailSurfaceVehicles.Refresh()
-}
-*/
-
-func buildUtility() {
-	utility := getUtilityVehicles()
-	detailUtilityVehicles.SetText(utility)
-	detailUtilityVehicles.Refresh()
-}
-
-func buildHighEnd() {
-	highEnd := getHighEndVehicles()
-	detailHighEndVehicles.SetText(highEnd)
-	detailHighEndVehicles.Refresh()
-}
-
-func buildVehicles() {
-	// buildSurface()
-	buildUtility()
-	buildHighEnd()
-	setVehicleDetails()
-	// buildTotal()
+func (v *vehicleDetails) hvyFighterChanged(value string) {
+	hftr, err := strconv.Atoi(value)
+	if err == nil {
+		vehicles.hvyFighter = hftr
+		if hftr > 0 {
+			hvyFighter.SetText(value)
+			hvyFighter.Show()
+		} else {
+			hvyFighter.SetText("0")
+			hvyFighter.Hide()
+		}
+	}
 }
 
 func countVehicles() int {
-	// result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCarrier +
-	//     vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
-	//     vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
-	result := vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
+	result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCar +
+		vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
 		vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
 
 	return result
 }
 
 func vehicleTonsUsed() int {
-	// result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 +
-	//     vehicles.gCarrier*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 +
-	//     vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 +
-	//     vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
-	result := vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 + vehicles.cutter*80 +
-		vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 + vehicles.ltFighter*10 +
-		vehicles.medFighter*30 + vehicles.hvyFighter*50
+	result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 +
+		vehicles.gCar*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 +
+		vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 +
+		vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
 
 	return result
-}
-
-func setVehicleDetails() {
-	// Start again
-	vehicleDetails.Children = make([]fyne.CanvasObject, 0)
-	// Check each and add if needed
-	if len(detailSurfaceVehicles.Text) > 0 {
-		vehicleDetails.Children = append(vehicleDetails.Children, detailSurfaceVehicles)
-	}
-	if len(detailUtilityVehicles.Text) > 0 {
-		vehicleDetails.Children = append(vehicleDetails.Children, detailUtilityVehicles)
-	}
-	if len(detailHighEndVehicles.Text) > 0 {
-		vehicleDetails.Children = append(vehicleDetails.Children, detailHighEndVehicles)
-	}
-	vehicleDetails.Refresh()
 }
 
 /*

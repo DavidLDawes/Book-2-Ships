@@ -16,10 +16,8 @@ func main() {
 	hull.init(settings, details)
 	drives.init(settings, details)
 	weapons.init(settings, details)
-	vehiclesInit()
-	// buildDetails()
+	vehicles.init(settings, details)
 
-	setVehicleDetails()
 	berthsSelectsInit()
 	berths.adjustSlider()
 
