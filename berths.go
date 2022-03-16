@@ -30,7 +30,6 @@ type berthInfo struct {
 	roboSecurity int
 	service      int
 	roboService  int
-	detailLabels []*widget.Label
 }
 
 var berths = berthInfo{
@@ -55,58 +54,54 @@ var berths = berthInfo{
 	roboSecurity: 0,
 	service:      0,
 	roboService:  0,
-	detailLabels: []*widget.Label{
-		widget.NewLabel("Staterooms"), widget.NewLabel("Low berths"),
-		widget.NewLabel("Emergency Low"), widget.NewLabel("Command crew"),
-		widget.NewLabel("Bridge crew"), widget.NewLabel("Engineerings"),
-		widget.NewLabel("Gunners"), widget.NewLabel("Stewards"),
-	},
 }
 
 var (
-	stateroomSlider    *widget.Slider = widget.NewSlider(4.0, 28.0)
-	lowBerthSelect     *widget.Select
-	emergencyLowSelect *widget.Select
-	berthSettings      *widget.Form
-	berthDetails       *widget.Box
-	ignoreBerthChanges = false
+	lowLevel = []string{
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+		"20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+		"30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+	}
+
+	room = widget.NewLabel("Staterooms")
+	low  = widget.NewLabel("Low berths")
+	eLow = widget.NewLabel("Emergency Low")
+	cmd  = widget.NewLabel("Command crew")
+	brdg = widget.NewLabel("Bridge crew")
+	eng  = widget.NewLabel("Engineerings")
+	gun  = widget.NewLabel("Gunners")
+	stw  = widget.NewLabel("Stewards")
+	plt  = widget.NewLabel("Pilots")
+
+	berthDetailsBox = widget.NewVBox(
+		widget.NewLabel("Berths"), low, eLow,
+		// widget.NewLabel("Berths"), room, low, eLow, cmd, brdg, eng, gun, stw,
+	)
+	stateroomSlider    *widget.Slider = widget.NewSlider(0.0, float64(len(lowLevel)))
+	lowBerthSelect                    = widget.NewSelect(lowLevel, nothing)
+	emergencyLowSelect                = widget.NewSelect(lowLevel, nothing)
+	ignoreBerthChanges                = false
+	berthsForm                        = widget.NewForm(
+		widget.NewFormItem("Low Berths", lowBerthSelect),
+		widget.NewFormItem("Emergency Low Berths", emergencyLowSelect))
 )
 
-func (b berthInfo) berthsInit() {
-	stateroomSlider.Value = 4.0
-	stateroomSlider.OnChanged = b.stateroomChanged
+func (b berthInfo) init(form *widget.Form, box *widget.Box) {
+	none := "0"
+	lowBerthSelect.PlaceHolder = none
+	lowBerthSelect.Selected = none
+	emergencyLowSelect.PlaceHolder = none
+	emergencyLowSelect.Selected = none
+	// stateroomSlider.Value = 4.0
 
-	lowLevel := make([]string, 401)
-	for i := 0; i < 401; i++ {
-		lowLevel[i] = strconv.Itoa(i)
-	}
-
-	lowBerthSelect = widget.NewSelect(lowLevel, b.lowBerthsChanged)
-	emergencyLowSelect = widget.NewSelect(lowLevel, b.emergencyLowChanged)
-	stateroomSlider = widget.NewSlider(4.0, 12.0)
-
-	berthSettings = widget.NewForm(
-		widget.NewFormItem("Staterooms", stateroomSlider),
-		widget.NewFormItem("Low Berths", lowBerthSelect),
-		widget.NewFormItem("Emergency Low Berths", emergencyLowSelect),
-	)
-
+	form.AppendItem(widget.NewFormItem("Berths", berthsForm))
+	box.Children = append(box.Children, berthDetailsBox)
 	b.adjustSlider()
 
-	berthDetails = widget.NewVBox()
-	for _, detail := range b.detailLabels {
-		berthDetails.Append(detail)
-	}
-	/*
-		detailStaterooms,
-		detailLowBerths,
-		detailEmergencyLow,
-		detailCommandCrew,
-		detailBridgeCrew,
-		detailEngCrew,
-		detailGunCrew,
-		detailStewardCrew,
-	*/
+	stateroomSlider.OnChanged = b.stateroomChanged
+	lowBerthSelect.OnChanged = b.lowBerthsChanged
+	emergencyLowSelect.OnChanged = b.emergencyLowChanged
 }
 
 func berthsSelectsInit() {
@@ -115,7 +110,7 @@ func berthsSelectsInit() {
 }
 
 func (b berthInfo) stateroomChanged(rooms float64) {
-	rooms = math.Floor(rooms + .999999)
+	rooms = math.Floor(rooms + roundUp)
 	if int(rooms) < b.getTotalCrew() {
 		rooms = float64(b.getTotalCrew())
 		ignoreBerthChanges = true
@@ -158,23 +153,23 @@ func (b berthInfo) emergencyLowChanged(value string) {
 
 func (b berthInfo) buildStaterooms() {
 	ignoreBerthChanges = true
-	b.detailLabels[0].SetText(fmt.Sprintf("Staterooms: %d, tons: %d", b.staterooms, 4*b.staterooms))
+	room.SetText(fmt.Sprintf("Staterooms: %d, tons: %d", b.staterooms, 4*b.staterooms))
 	ignoreBerthChanges = false
-	b.detailLabels[0].Refresh()
+	room.Refresh()
 }
 
 func (b berthInfo) buildLowBerths() {
 	ignoreBerthChanges = true
-	b.detailLabels[1].SetText(fmt.Sprintf("Low berths: %d, tons: %d", b.lowBerths, b.lowBerths/2))
+	low.SetText(fmt.Sprintf("Low berths: %d, tons: %d", b.lowBerths, b.lowBerths/2))
 	ignoreBerthChanges = false
-	b.detailLabels[1].Refresh()
+	low.Refresh()
 }
 
 func (b berthInfo) buildEmergencyLow() {
 	ignoreBerthChanges = true
-	b.detailLabels[2].SetText(fmt.Sprintf("Emergency low berths: %d, tons: %d", b.emergencylow, b.emergencylow))
+	eLow.SetText(fmt.Sprintf("Emergency low berths: %d, tons: %d", b.emergencylow, b.emergencylow))
 	ignoreBerthChanges = false
-	b.detailLabels[2].Refresh()
+	eLow.Refresh()
 }
 
 func (b berthInfo) buildCrew() {
@@ -225,8 +220,8 @@ func (b berthInfo) buildCrew() {
 	if b.comms > 0 {
 		cmdCrew += fmt.Sprintf("%d Comms, ", b.comms)
 	}
-	b.detailLabels[3].SetText(cmdCrew)
-	b.detailLabels[3].Refresh()
+	cmd.SetText(cmdCrew)
+	cmd.Refresh()
 
 	brdgCrew := fmt.Sprintf("%d Pilot, ", b.pilots)
 	if b.navigator > 0 {
@@ -235,25 +230,25 @@ func (b berthInfo) buildCrew() {
 	if b.medic > 0 {
 		brdgCrew += fmt.Sprintf("%d Medic, ", b.medic)
 	}
-	b.detailLabels[4].SetText(brdgCrew)
-	b.detailLabels[4].Refresh()
+	brdg.SetText(brdgCrew)
+	brdg.Refresh()
 
 	b.refreshEngineeringCrew()
 
 	if b.security > 0 {
 		if b.gunners > 0 {
-			b.detailLabels[6].SetText(fmt.Sprintf("%d Gunners, %d Security", b.gunners, b.security))
+			gun.SetText(fmt.Sprintf("%d Gunners, %d Security", b.gunners, b.security))
 		} else {
-			b.detailLabels[6].SetText(fmt.Sprintf("%d Security", b.security))
+			gun.SetText(fmt.Sprintf("%d Security", b.security))
 		}
 	} else {
 		if b.gunners > 0 {
-			b.detailLabels[6].SetText(fmt.Sprintf("%d Gunners", b.gunners))
+			gun.SetText(fmt.Sprintf("%d Gunners", b.gunners))
 		} else {
-			b.detailLabels[6].SetText("No Gunners, No Security")
+			gun.SetText("No Gunners, No Security")
 		}
 	}
-	b.detailLabels[6].Refresh()
+	gun.Refresh()
 
 	if b.getTotalCrew() > 120 {
 		b.medic = (119 + b.staterooms) / 120
@@ -271,11 +266,11 @@ func (b berthInfo) buildCrew() {
 	}
 
 	if b.support > 0 {
-		b.detailLabels[7].SetText(fmt.Sprintf("%d Stewards, %d Support", b.stewards, b.support))
+		stw.SetText(fmt.Sprintf("%d Stewards, %d Support", b.stewards, b.support))
 	} else {
-		b.detailLabels[7].SetText(fmt.Sprintf("%d Stewards", b.stewards))
+		stw.SetText(fmt.Sprintf("%d Stewards", b.stewards))
 	}
-	b.detailLabels[7].Refresh()
+	stw.Refresh()
 }
 
 func (b berthInfo) buildBerths() {
@@ -285,21 +280,26 @@ func (b berthInfo) buildBerths() {
 }
 
 func (b berthInfo) setEngineers() {
-	b.engineer = int((drives.j.tons + drives.m.tons + drives.p.tons) / 100.0)
+	if drives.tons() < 150 {
+		b.engineer = int(drives.tons()+99) / 100.0
+	} else {
+		b.engineer = int(drives.j.tons+99)/100.0 + int(drives.m.tons+99)/100.0 + int(drives.p.tons+99)/100.0
+	}
 }
 
 func (b berthInfo) refreshEngineeringCrew() {
 	if b.service > 0 {
-		b.detailLabels[5].SetText(fmt.Sprintf("%d Engineers, %d Service", b.engineer, b.service))
+		eng.SetText(fmt.Sprintf("%d Engineers, %d Service", b.engineer, b.service))
 	} else {
-		b.detailLabels[5].SetText(fmt.Sprintf("%d Engineers", b.engineer))
+		eng.SetText(fmt.Sprintf("%d Engineers", b.engineer))
 	}
-	b.detailLabels[5].Refresh()
+	eng.Refresh()
 }
 
 func (b berthInfo) refreshPilots() {
 	b.pilots = 1 + countVehicles()
-	b.detailLabels[4].Refresh()
+	plt.SetText(fmt.Sprintf("%d Pilots", b.pilots))
+	plt.Refresh()
 }
 
 func (b berthInfo) adjustSlider() {
@@ -311,14 +311,15 @@ func (b berthInfo) adjustSlider() {
 
 func (b berthInfo) getTotalCrew() int {
 	b.refreshPilots()
-	return b.engineer + b.pilots + b.gunners + b.medic + b.stewards + b.navigator + b.exec + b.command + b.computer + b.comms + b.security + b.support + b.service
+	return b.engineer + b.pilots + b.gunners + b.medic + b.stewards + b.navigator + b.exec + b.command +
+		b.computer + b.comms + b.security + b.support + b.service
 }
 
 func (b berthInfo) getTotalRobots() int {
 	return b.roboGunners + b.roboSecurity + b.roboService + b.roboStewards + b.roboSupport
 }
 
-func (b berthInfo) berthsTonsUsed() int {
+func (b berthInfo) tons() int {
 	return 4*b.staterooms + (b.lowBerths+1)/2
 }
 
@@ -329,6 +330,7 @@ func (b berthInfo) setStewards() {
 }
 
 func (b berthInfo) remainingTons() (tonsRemaining int) {
-	tonsRemaining = hull.tons - weapons.weaponsTonsUsed() - drives.drivesTonsUsed() - b.berthsTonsUsed()
+	tonsRemaining = hull.tons - weapons.tons() - drives.tons() - b.tons()
+
 	return
 }

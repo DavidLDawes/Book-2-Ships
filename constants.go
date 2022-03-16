@@ -129,4 +129,5 @@ const (
 	defaultTons       = 200
 	defaultMaxhardpts = 2
 	defaultHullPrice  = 8
+	roundUp           = 0.999999
 )

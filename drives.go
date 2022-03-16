@@ -6,57 +6,414 @@ import (
 	"fyne.io/fyne/widget"
 )
 
+// drive structure defines what we need to know about a given drive (A-Z) selection.
 type drive struct {
-	code        string // A (smallest) to Z (biggest)
-	tons        int    // tonnage used by the engine
-	cost        int    // in MCr
-	perf        int
-	driveSelect *widget.Select
+	code string // Engine, basically size from A (smallest) to Z (biggest)
+	tons int    // tonnage used by the engine
+	cost int    // cost of the engine, in MCr
+	perf int    // Actual performance, like -2 or -3. So a Jump drive J-2 has 2 for perf.
 }
 
+// drivedetails gathers drives, fuel, and the output UI stuff needed externally
+// Most of the methods in this module are off of this driveDetails struct.
 type driveDetails struct {
-	j     drive
-	m     drive
-	p     drive
-	fuel  float32
-	panel panel
+	j    drive
+	m    drive
+	p    drive
+	fuel float32
 }
 
+var drives = driveDetails{
+	j:    drive{"B", 20, 15, 2},
+	m:    drive{"B", 3, 8, 2},
+	p:    drive{"B", 7, 16, 2},
+	fuel: 20,
+}
+
+// Use this to convert from hullIndex (0-9, A-Z) to the effect (the performance, M-2 or P-5 etc.) that an engine
+// has on that hull.
 type effectPerHullByEngine struct {
 	hullIndex int
 	effect    int
 }
 
+// A "row" of the effects table
+// for the name (engine name, so it is A through Z) in this record we record the available hulls that can use this
+// engine along with the resulting effect (i.e J-4 or P-6, gets the performance integer for any of the 3 engine types)
+// The array of these is used to figure out if a given engine selection works in a given hull, and if so what the
+// poerformance ends up being for that combination,.
 type engineEffect struct {
 	name    string
 	effects []effectPerHullByEngine
 }
 
 var engineEffects = [24]engineEffect{
-	{TrvIndex[0], []effectPerHullByEngine{{0, 2}, {1, 2}, {2, 1}}},
-	{TrvIndex[1], []effectPerHullByEngine{{0, 4}, {1, 4}, {2, 2}, {3, 1}, {4, 1}}},
-	{TrvIndex[2], []effectPerHullByEngine{{0, 6}, {1, 6}, {2, 3}, {3, 1}, {4, 1}, {5, 1}}},
-	{TrvIndex[3], []effectPerHullByEngine{{2, 4}, {3, 2}, {4, 2}, {5, 1}, {6, 1}, {7, 1}, {8, 1}}},
-	{TrvIndex[4], []effectPerHullByEngine{{2, 5}, {3, 3}, {4, 2}, {5, 2}, {6, 1}, {7, 1}, {8, 1}, {9, 1}, {10, 1}}},
-	{TrvIndex[5], []effectPerHullByEngine{{2, 6}, {3, 4}, {4, 3}, {5, 2}, {6, 2}, {7, 1}, {8, 1}, {9, 1}, {10, 1}, {11, 1}, {12, 1}}},
-	{TrvIndex[6], []effectPerHullByEngine{{3, 4}, {4, 3}, {5, 2}, {6, 2}, {7, 2}, {8, 2}, {9, 1}, {10, 1}, {11, 1}, {12, 1}, {13, 1}, {14, 1}}},
-	{TrvIndex[7], []effectPerHullByEngine{{3, 5}, {4, 4}, {5, 3}, {6, 2}, {7, 2}, {8, 2}, {9, 2}, {10, 2}, {11, 1}, {12, 1}, {13, 1}, {14, 1}, {15, 1}, {16, 1}}},
-	{TrvIndex[8], []effectPerHullByEngine{{3, 6}, {4, 4}, {5, 3}, {6, 3}, {7, 2}, {8, 2}, {9, 2}, {10, 2}, {11, 2}, {12, 2}, {13, 2}, {14, 1}, {15, 1}, {16, 1}, {17, 1}, {18, 1}}},
-	{TrvIndex[9], []effectPerHullByEngine{{4, 5}, {5, 4}, {6, 3}, {7, 3}, {8, 3}, {9, 2}, {10, 2}, {11, 2}, {12, 2}, {13, 2}, {14, 2}, {15, 2}, {16, 1}, {17, 1}, {18, 1}, {19, 1}, {20, 1}}},
-	{TrvIndex[10], []effectPerHullByEngine{{4, 5}, {5, 4}, {6, 3}, {7, 3}, {8, 3}, {9, 3}, {10, 3}, {11, 3}, {12, 2}, {13, 2}, {14, 2}, {15, 2}, {16, 2}, {17, 2}, {18, 1}, {19, 1}, {20, 1}}},
-	{TrvIndex[11], []effectPerHullByEngine{{4, 6}, {5, 4}, {6, 4}, {7, 3}, {8, 3}, {9, 3}, {10, 3}, {11, 3}, {12, 3}, {13, 3}, {14, 2}, {15, 2}, {16, 2}, {17, 2}, {18, 1}, {19, 1}, {20, 1}}},
-	{TrvIndex[12], []effectPerHullByEngine{{4, 6}, {5, 5}, {6, 4}, {7, 4}, {8, 4}, {9, 3}, {10, 3}, {11, 3}, {12, 3}, {13, 3}, {14, 3}, {15, 3}, {16, 2}, {17, 2}, {18, 2}, {19, 2}, {20, 2}}},
-	{TrvIndex[13], []effectPerHullByEngine{{5, 5}, {6, 4}, {7, 4}, {8, 4}, {9, 4}, {10, 4}, {11, 3}, {12, 3}, {13, 3}, {14, 3}, {15, 3}, {16, 3}, {17, 3}, {18, 2}, {19, 2}, {20, 2}}},
-	{TrvIndex[14], []effectPerHullByEngine{{5, 6}, {6, 5}, {7, 4}, {8, 4}, {9, 4}, {10, 4}, {11, 4}, {12, 4}, {13, 4}, {14, 3}, {15, 3}, {16, 3}, {17, 3}, {18, 3}, {19, 3}, {20, 2}}},
-	{TrvIndex[15], []effectPerHullByEngine{{5, 6}, {6, 5}, {7, 5}, {8, 5}, {9, 4}, {10, 4}, {11, 4}, {12, 4}, {13, 4}, {14, 4}, {15, 4}, {16, 3}, {17, 3}, {18, 3}, {19, 3}, {20, 3}}},
-	{TrvIndex[16], []effectPerHullByEngine{{5, 6}, {6, 5}, {7, 5}, {8, 5}, {9, 5}, {10, 5}, {11, 5}, {12, 4}, {13, 4}, {14, 4}, {15, 4}, {16, 4}, {17, 4}, {18, 3}, {19, 3}, {20, 3}}},
-	{TrvIndex[17], []effectPerHullByEngine{{6, 6}, {7, 5}, {8, 5}, {9, 5}, {10, 5}, {11, 5}, {12, 5}, {13, 5}, {14, 4}, {15, 4}, {16, 4}, {17, 4}, {18, 4}, {19, 4}, {20, 3}}},
-	{TrvIndex[18], []effectPerHullByEngine{{6, 6}, {7, 6}, {8, 5}, {9, 5}, {10, 5}, {11, 5}, {12, 5}, {13, 5}, {14, 4}, {15, 4}, {16, 4}, {17, 4}, {18, 4}, {19, 4}, {20, 4}}},
-	{TrvIndex[19], []effectPerHullByEngine{{6, 6}, {7, 6}, {8, 6}, {9, 5}, {10, 5}, {11, 5}, {12, 5}, {13, 5}, {14, 5}, {15, 5}, {16, 4}, {17, 4}, {18, 4}, {19, 4}, {20, 4}}},
-	{TrvIndex[20], []effectPerHullByEngine{{7, 6}, {8, 6}, {9, 6}, {10, 5}, {11, 5}, {12, 5}, {13, 5}, {14, 5}, {15, 5}, {16, 4}, {17, 4}, {18, 4}, {19, 4}, {20, 4}}},
-	{TrvIndex[21], []effectPerHullByEngine{{7, 6}, {8, 6}, {9, 6}, {10, 6}, {11, 6}, {12, 5}, {13, 5}, {14, 5}, {15, 5}, {16, 5}, {17, 5}, {18, 4}, {19, 4}, {20, 4}}},
-	{TrvIndex[22], []effectPerHullByEngine{{7, 6}, {8, 6}, {9, 6}, {10, 6}, {11, 6}, {12, 5}, {13, 5}, {14, 5}, {15, 5}, {16, 5}, {17, 5}, {18, 4}, {19, 4}, {20, 4}}},
-	{TrvIndex[23], []effectPerHullByEngine{{7, 6}, {8, 6}, {9, 6}, {10, 6}, {11, 6}, {12, 6}, {13, 6}, {14, 5}, {15, 5}, {16, 5}, {17, 5}, {18, 5}, {19, 5}, {20, 4}}},
+	{TrvIndex[0], []effectPerHullByEngine{
+		{0, 2}, {1, 2}, {2, 1},
+	}},
+	{TrvIndex[1], []effectPerHullByEngine{
+		{0, 4},
+		{1, 4},
+		{2, 2},
+		{3, 1},
+		{4, 1},
+	}},
+	{TrvIndex[2], []effectPerHullByEngine{
+		{0, 6},
+		{1, 6},
+		{2, 3},
+		{3, 1},
+		{4, 1},
+		{5, 1},
+	}},
+	{TrvIndex[3], []effectPerHullByEngine{
+		{2, 4},
+		{3, 2},
+		{4, 2},
+		{5, 1},
+		{6, 1},
+		{7, 1},
+		{8, 1},
+	}},
+	{TrvIndex[4], []effectPerHullByEngine{
+		{2, 5},
+		{3, 3},
+		{4, 2},
+		{5, 2},
+		{6, 1},
+		{7, 1},
+		{8, 1},
+		{9, 1},
+		{10, 1},
+	}},
+	{TrvIndex[5], []effectPerHullByEngine{
+		{2, 6},
+		{3, 4},
+		{4, 3},
+		{5, 2},
+		{6, 2},
+		{7, 1},
+		{8, 1},
+		{9, 1},
+		{10, 1},
+		{11, 1},
+		{12, 1},
+	}},
+	{TrvIndex[6], []effectPerHullByEngine{
+		{3, 4},
+		{4, 3},
+		{5, 2},
+		{6, 2},
+		{7, 2},
+		{8, 2},
+		{9, 1},
+		{10, 1},
+		{11, 1},
+		{12, 1},
+		{13, 1},
+		{14, 1},
+	}},
+	{TrvIndex[7], []effectPerHullByEngine{
+		{3, 5},
+		{4, 4},
+		{5, 3},
+		{6, 2},
+		{7, 2},
+		{8, 2},
+		{9, 2},
+		{10, 2},
+		{11, 1},
+		{12, 1},
+		{13, 1},
+		{14, 1},
+		{15, 1},
+		{16, 1},
+	}},
+	{TrvIndex[8], []effectPerHullByEngine{
+		{3, 6},
+		{4, 4},
+		{5, 3},
+		{6, 3},
+		{7, 2},
+		{8, 2},
+		{9, 2},
+		{10, 2},
+		{11, 2},
+		{12, 2},
+		{13, 2},
+		{14, 1},
+		{15, 1},
+		{16, 1},
+		{17, 1},
+		{18, 1},
+	}},
+	{TrvIndex[9], []effectPerHullByEngine{
+		{4, 5},
+		{5, 4},
+		{6, 3},
+		{7, 3},
+		{8, 3},
+		{9, 2},
+		{10, 2},
+		{11, 2},
+		{12, 2},
+		{13, 2},
+		{14, 2},
+		{15, 2},
+		{16, 1},
+		{17, 1},
+		{18, 1},
+		{19, 1},
+		{20, 1},
+	}},
+	{TrvIndex[10], []effectPerHullByEngine{
+		{4, 5},
+		{5, 4},
+		{6, 3},
+		{7, 3},
+		{8, 3},
+		{9, 3},
+		{10, 3},
+		{11, 3},
+		{12, 2},
+		{13, 2},
+		{14, 2},
+		{15, 2},
+		{16, 2},
+		{17, 2},
+		{18, 1},
+		{19, 1},
+		{20, 1},
+	}},
+	{TrvIndex[11], []effectPerHullByEngine{
+		{4, 6},
+		{5, 4},
+		{6, 4},
+		{7, 3},
+		{8, 3},
+		{9, 3},
+		{10, 3},
+		{11, 3},
+		{12, 3},
+		{13, 3},
+		{14, 2},
+		{15, 2},
+		{16, 2},
+		{17, 2},
+		{18, 1},
+		{19, 1},
+		{20, 1},
+	}},
+	{TrvIndex[12], []effectPerHullByEngine{
+		{4, 6},
+		{5, 5},
+		{6, 4},
+		{7, 4},
+		{8, 4},
+		{9, 3},
+		{10, 3},
+		{11, 3},
+		{12, 3},
+		{13, 3},
+		{14, 3},
+		{15, 3},
+		{16, 2},
+		{17, 2},
+		{18, 2},
+		{19, 2},
+		{20, 2},
+	}},
+	{TrvIndex[13], []effectPerHullByEngine{
+		{5, 5},
+		{6, 4},
+		{7, 4},
+		{8, 4},
+		{9, 4},
+		{10, 4},
+		{11, 3},
+		{12, 3},
+		{13, 3},
+		{14, 3},
+		{15, 3},
+		{16, 3},
+		{17, 3},
+		{18, 2},
+		{19, 2},
+		{20, 2},
+	}},
+	{TrvIndex[14], []effectPerHullByEngine{
+		{5, 6},
+		{6, 5},
+		{7, 4},
+		{8, 4},
+		{9, 4},
+		{10, 4},
+		{11, 4},
+		{12, 4},
+		{13, 4},
+		{14, 3},
+		{15, 3},
+		{16, 3},
+		{17, 3},
+		{18, 3},
+		{19, 3},
+		{20, 2},
+	}},
+	{TrvIndex[15], []effectPerHullByEngine{
+		{5, 6},
+		{6, 5},
+		{7, 5},
+		{8, 5},
+		{9, 4},
+		{10, 4},
+		{11, 4},
+		{12, 4},
+		{13, 4},
+		{14, 4},
+		{15, 4},
+		{16, 3},
+		{17, 3},
+		{18, 3},
+		{19, 3},
+		{20, 3},
+	}},
+	{TrvIndex[16], []effectPerHullByEngine{
+		{5, 6},
+		{6, 5},
+		{7, 5},
+		{8, 5},
+		{9, 5},
+		{10, 5},
+		{11, 5},
+		{12, 4},
+		{13, 4},
+		{14, 4},
+		{15, 4},
+		{16, 4},
+		{17, 4},
+		{18, 3},
+		{19, 3},
+		{20, 3},
+	}},
+	{TrvIndex[17], []effectPerHullByEngine{
+		{6, 6},
+		{7, 5},
+		{8, 5},
+		{9, 5},
+		{10, 5},
+		{11, 5},
+		{12, 5},
+		{13, 5},
+		{14, 4},
+		{15, 4},
+		{16, 4},
+		{17, 4},
+		{18, 4},
+		{19, 4},
+		{20, 3},
+	}},
+	{TrvIndex[18], []effectPerHullByEngine{
+		{6, 6},
+		{7, 6},
+		{8, 5},
+		{9, 5},
+		{10, 5},
+		{11, 5},
+		{12, 5},
+		{13, 5},
+		{14, 4},
+		{15, 4},
+		{16, 4},
+		{17, 4},
+		{18, 4},
+		{19, 4},
+		{20, 4},
+	}},
+	{TrvIndex[19], []effectPerHullByEngine{
+		{6, 6},
+		{7, 6},
+		{8, 6},
+		{9, 5},
+		{10, 5},
+		{11, 5},
+		{12, 5},
+		{13, 5},
+		{14, 5},
+		{15, 5},
+		{16, 4},
+		{17, 4},
+		{18, 4},
+		{19, 4},
+		{20, 4},
+	}},
+	{TrvIndex[20], []effectPerHullByEngine{
+		{7, 6},
+		{8, 6},
+		{9, 6},
+		{10, 5},
+		{11, 5},
+		{12, 5},
+		{13, 5},
+		{14, 5},
+		{15, 5},
+		{16, 4},
+		{17, 4},
+		{18, 4},
+		{19, 4},
+		{20, 4},
+	}},
+	{TrvIndex[21], []effectPerHullByEngine{
+		{7, 6},
+		{8, 6},
+		{9, 6},
+		{10, 6},
+		{11, 6},
+		{12, 5},
+		{13, 5},
+		{14, 5},
+		{15, 5},
+		{16, 5},
+		{17, 5},
+		{18, 4},
+		{19, 4},
+		{20, 4},
+	}},
+	{TrvIndex[22], []effectPerHullByEngine{
+		{7, 6},
+		{8, 6},
+		{9, 6},
+		{10, 6},
+		{11, 6},
+		{12, 5},
+		{13, 5},
+		{14, 5},
+		{15, 5},
+		{16, 5},
+		{17, 5},
+		{18, 4},
+		{19, 4},
+		{20, 4},
+	}},
+	{TrvIndex[23], []effectPerHullByEngine{
+		{7, 6},
+		{8, 6},
+		{9, 6},
+		{10, 6},
+		{11, 6},
+		{12, 6},
+		{13, 6},
+		{14, 5},
+		{15, 5},
+		{16, 5},
+		{17, 5},
+		{18, 5},
+		{19, 5},
+		{20, 4},
+	}},
+}
+
+var minEnginePerHull = [13]int{
+	1, 1, 1, 2, 3, 4, 5, 9, 15, 20, 21, 22, 23,
 }
 
 type engineDetail struct {
@@ -120,38 +477,18 @@ var (
 	driveDetailsBox = widget.NewVBox(
 		widget.NewLabel("Drives"), detailJump, detailJumpFuel, detailManeuver, detailPower,
 	)
-)
 
-var (
 	jumpSelect     = widget.NewSelect(TrvIndex, nothing)
 	maneuverSelect = widget.NewSelect(TrvIndex, nothing)
 	powerSelect    = widget.NewSelect(TrvIndex, nothing)
-	driveForm = widget.NewForm(
-				widget.NewFormItem("Jump", jumpSelect),
-				widget.NewFormItem("Maneuver", maneuverSelect),
-				widget.NewFormItem("Power", powerSelect),
+	driveForm      = widget.NewForm(
+		widget.NewFormItem("Jump", jumpSelect),
+		widget.NewFormItem("Maneuver", maneuverSelect),
+		widget.NewFormItem("Power", powerSelect),
 	)
 )
 
-var drives = driveDetails{
-	j:    drive{defaultDrive, engineDetails[defaultIndex].jTons, engineDetails[defaultIndex].jCost, 2, jumpSelect},
-	m:    drive{defaultDrive, engineDetails[defaultIndex].mTons, engineDetails[defaultIndex].mCost, 2, maneuverSelect},
-	p:    drive{defaultDrive, engineDetails[defaultIndex].pTons, engineDetails[defaultIndex].pCost, 2, powerSelect},
-	fuel: 22,
-	panel: panel{
-		change:  nil,
-		selects: nil,
-		settings: []*widget.Form{
-			driveForm,
-		},
-		details: []*widget.Box{
-			driveDetailsBox,
-		},
-	},
-}
-
-
-func (d *driveDetails) init() {
+func (d *driveDetails) init(form *widget.Form, box *widget.Box) {
 	jumpSelect.PlaceHolder = defaultDrive
 	jumpSelect.OnChanged = d.jumpChanged
 
@@ -161,18 +498,13 @@ func (d *driveDetails) init() {
 	powerSelect.PlaceHolder = defaultDrive
 	powerSelect.OnChanged = d.powerChanged
 
-	drives.panel.selects = []*widget.Select{
-		jumpSelect, maneuverSelect, powerSelect,
-	}
+	form.AppendItem(widget.NewFormItem("Drives", driveForm))
 
-	drives.panel.details = []*widget.Box{
-		driveDetailsBox,
-	}
+	box.Children = append(box.Children, driveDetailsBox)
 	d.jumpChanged(defaultDrive)
 	d.maneuverChanged(defaultDrive)
 	d.powerChanged(defaultDrive)
 }
-
 
 func (d *driveDetails) startup() {
 	jumpSelect.OnChanged = d.jumpChanged
@@ -180,13 +512,7 @@ func (d *driveDetails) startup() {
 	powerSelect.OnChanged = d.powerChanged
 }
 
-func (d driveDetails) buildDrives() (*widget.Box, *widget.Form) {
-	return driveDetailsBox, driveForm
-}
-
-func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool,
-	) (good bool, effect int, newDrive string) {
-  	hIndex := getIndexFromHull(hull.code)
+func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool) (good bool, effect int, newDrive string) {
 	if checkPower {
 		// If we are checking power (i.e. Jump orManeuver) then power == max, cap it there
 		if engineCode > d.p.code {
@@ -195,6 +521,7 @@ func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool,
 		}
 	}
 
+	hIndex := getIndexFromHull(hull.code)
 	dIndex := d.getIndexFromDrive(engineCode)
 	good = false
 	if hIndex > -1 && dIndex > -1 {
@@ -208,6 +535,18 @@ func (d *driveDetails) checkDrive(engineCode string, drv drive, checkPower bool,
 			}
 		}
 	}
+
+	return
+}
+
+func (d *driveDetails) minDrives(hullCode string) (j int, m int, p int) {
+	hIndex := getIndexFromHull(hullCode)
+	if hIndex > 12 {
+		hIndex = 12
+	}
+	j = minEnginePerHull[hIndex]
+	m = j
+	p = j
 
 	return
 }
@@ -270,7 +609,7 @@ func (d *driveDetails) powerChanged(value string) {
 }
 
 func (d *driveDetails) buildJump() {
-	detailJump.SetText(fmt.Sprintf("Jump Drive: %s J-%d, tons: %d, cost: %d",
+	detailJump.SetText(fmt.Sprintf("Jump Drive %s: J-%d, tons: %d, cost: %d",
 		d.j.code, d.j.perf, d.j.tons, d.j.cost))
 	detailJump.Refresh()
 	//	detailComputer.SetText(fmt.Sprintf("computer %d: %d tons",
@@ -281,7 +620,7 @@ func (d *driveDetails) buildJump() {
 }
 
 func (d *driveDetails) buildManeuver() {
-	detailManeuver.SetText(fmt.Sprintf("Maneuver Drive: %s M-%d, tons: %d, cost: %d",
+	detailManeuver.SetText(fmt.Sprintf("Maneuver Drive %s: M-%d, tons: %d, cost: %d",
 		d.m.code, d.m.perf, d.m.tons, d.m.cost))
 	detailManeuver.Refresh()
 	berths.setEngineers()
@@ -289,7 +628,7 @@ func (d *driveDetails) buildManeuver() {
 }
 
 func (d *driveDetails) buildPower() {
-	detailPower.SetText(fmt.Sprintf("Power Plant: %s P-%d, tons: %d, cost %d",
+	detailPower.SetText(fmt.Sprintf("Power Plant %s: P-%d, tons: %d, cost %d",
 		d.p.code, d.p.perf, d.p.tons, d.p.cost))
 	detailPower.Refresh()
 	berths.setEngineers()
@@ -302,15 +641,22 @@ func (d *driveDetails) buildFuel() {
 	detailJumpFuel.Refresh()
 }
 
-func (d *driveDetails) drivesTonsUsed() int {
+func (d *driveDetails) tons() int {
 	return d.j.tons + d.m.tons + d.p.tons + int(d.fuel+0.9999999) // Rounded up
 }
 
-func nothing(value string) {
+func (d *driveDetails) mCr() int {
+	return d.j.cost + d.m.cost + d.p.cost
 }
 
-func nothingBool(value bool) {
+func (d *driveDetails) tonsX3() (int, int, int) {
+	return d.j.tons, d.m.tons, d.p.tons
 }
 
-func nothingAtAll() {
+func (d *driveDetails) perfX3() (int, int, int) {
+	return d.j.perf, d.m.perf, d.p.perf
+}
+
+func (d *driveDetails) costX3() (int, int, int) {
+	return d.j.cost, d.m.cost, d.p.cost
 }

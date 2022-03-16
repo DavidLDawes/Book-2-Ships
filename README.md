@@ -8,6 +8,14 @@ Book 2 uses letter selections for drives - A-Z skipping I and O, so there 24 ava
 
 Hull selections go from 1-9 then A-Z, again skipping I and O, so therre are 33 hull sizes. I've added a hull size 0 for < 100 tons, not sure if that's useful.
 
+# Design
+I'm attempting to invert dependencies, kinda. Main should pass the detail & box widgets to the different UI oriented bits - one for weapons, one for drives, the hull, staterooms, etc.
+
+On intializatioon each UI component adds it's settings components (selections available, maybe drive A-Z or number of staterooms) to the passed in settings panel and adds its text output from those settings to the box on it's own line or lines as a text box so it can update and refresh the output as needed. Speaking of which it also sets up the onChange methods so that it is notified as needed.
+
+On the onChanged method call the UI component processes the user selection and updates the UI component's bit of it put into the passed-in box and refreshes the detail UI.
+
+There's complexity around side effects - go to a bigger engine and the required number of engineers increses so additional staterooms may be required...
 ##Building
 Simple golang executable, just do this from bash or Windows/Mac equivalent:
 
@@ -16,7 +24,7 @@ git clone https://github.com/DavidLDawes/Book-2-Ships.git
 cd Book-2-Ships
 go build .
 ```
-The result should be a sbip-ui executable. Mac is the same. Windows probably makes it ship-ui.exe, haven't checked. Not sure if the UI works on Linux or Windows, have not tried it. Most likely Windows needs some compatibiliuty stuff installed.
+The result should be a sbip-ui executable. Mac is the same. Windows probably makes it ship-ui.exe, haven't checked. Not sure if the UI works on Linux or Windows, have not tried it. Most likely Windows needs some compatibility stuff installed.
 
 ## Running
 If the build step above works, simply run ship-ui from the same top level project directory. For bash:

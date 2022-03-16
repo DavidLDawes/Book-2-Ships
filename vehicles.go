@@ -15,23 +15,22 @@ type vehicleDef struct {
 }
 
 var vehicleDefs = [...]vehicleDef{
-	vehicleDef{"Launch", 20, 14.0},
-	vehicleDef{"Boat", 30, 16.0},
-	vehicleDef{"Pinnace", 40, 20.0},
-	vehicleDef{"Shuttle", 95, 33.0},
-	vehicleDef{"Modular Cutter", 80, 20.0},
-	vehicleDef{"Light Fighter", 10, 18.0},
-	vehicleDef{"Medium Fighter", 23, 40.0},
-	vehicleDef{"Heavy Fighter", 55, 96.0},
+	{"Launch", 20, 14.0},
+	{"Boat", 30, 16.0},
+	{"Pinnace", 40, 20.0},
+	{"Shuttle", 95, 33.0},
+	{"Modular Cutter", 80, 20.0},
+	{"Light Fighter", 10, 18.0},
+	{"Medium Fighter", 23, 40.0},
+	{"Heavy Fighter", 55, 96.0},
 }
 
-
 type vehicleCounts struct {
-/*	atvWheel    int
-	atvTrack    int
-	airRaft     int
-	speeder     int
-	gCarrier    int */
+	/*	atvWheel    int
+		atvTrack    int
+		airRaft     int
+		speeder     int
+		gCarrier    int */
 	launch      int
 	shipsBoat   int
 	pinnace     int
@@ -45,11 +44,11 @@ type vehicleCounts struct {
 }
 
 var vehicles = vehicleCounts{
-/*	atvWheel:    0,
-	atvTrack:    0,
-	airRaft:     0,
-	speeder:     0,
-	gCarrier:    0, */
+	/*	atvWheel:    0,
+		atvTrack:    0,
+		airRaft:     0,
+		speeder:     0,
+		gCarrier:    0, */
 	launch:      0,
 	shipsBoat:   0,
 	pinnace:     0,
@@ -74,11 +73,11 @@ var (
 )
 
 var (
-/*	atvWheelSelect    *widget.Select
-	atvTrackSelect    *widget.Select
-	airRaftSelect     *widget.Select
-	speederSelect     *widget.Select
-	gCarrierSelect    *widget.Select */
+	/*	atvWheelSelect    *widget.Select
+		atvTrackSelect    *widget.Select
+		airRaftSelect     *widget.Select
+		speederSelect     *widget.Select
+		gCarrierSelect    *widget.Select */
 	launchSelect      *widget.Select
 	shipsBoatSelect   *widget.Select
 	pinnaceSelect     *widget.Select
@@ -94,11 +93,11 @@ var (
 var ignorevehicles = false
 
 func vehiclesInit() {
-/*	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
-	atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
-	airRaftSelect = widget.NewSelect(weaponLevel, airRaftChanged)
-	speederSelect = widget.NewSelect(weaponLevel, speederChanged)
-	gCarrierSelect = widget.NewSelect(weaponLevel, gCarrierChanged) */
+	/*	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
+		atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
+		airRaftSelect = widget.NewSelect(weaponLevel, airRaftChanged)
+		speederSelect = widget.NewSelect(weaponLevel, speederChanged)
+		gCarrierSelect = widget.NewSelect(weaponLevel, gCarrierChanged) */
 	launchSelect = widget.NewSelect(weaponLevel, launchChanged)
 	shipsBoatSelect = widget.NewSelect(weaponLevel, shipsBoatChanged)
 	pinnaceSelect = widget.NewSelect(weaponLevel, pinnaceChanged)
@@ -111,11 +110,11 @@ func vehiclesInit() {
 	hvyFigherSelect = widget.NewSelect(weaponLevel, hvyFighterChanged)
 
 	vehicleSettings = widget.NewForm(
-/*		widget.NewFormItem("ATV, Wheeled", atvWheelSelect),
-		widget.NewFormItem("ATV, Tracked", atvTrackSelect),
-		widget.NewFormItem("Air/Raft", airRaftSelect),
-		widget.NewFormItem("Speeder", speederSelect),
-		widget.NewFormItem("GCarrier", gCarrierSelect), */
+		/*		widget.NewFormItem("ATV, Wheeled", atvWheelSelect),
+				widget.NewFormItem("ATV, Tracked", atvTrackSelect),
+				widget.NewFormItem("Air/Raft", airRaftSelect),
+				widget.NewFormItem("Speeder", speederSelect),
+				widget.NewFormItem("GCarrier", gCarrierSelect), */
 		widget.NewFormItem("Launch", launchSelect),
 		widget.NewFormItem("Ship's Boat", shipsBoatSelect),
 		widget.NewFormItem("Pinnace", pinnaceSelect),
@@ -127,8 +126,6 @@ func vehiclesInit() {
 		widget.NewFormItem("Medium Fighter", medFigherSelect),
 		widget.NewFormItem("Heavy Fighter", hvyFigherSelect),
 	)
-
-	weapons.weaponsSelectInit()
 }
 
 /*
@@ -379,7 +376,7 @@ func buildHighEnd() {
 }
 
 func buildVehicles() {
-	//buildSurface()
+	// buildSurface()
 	buildUtility()
 	buildHighEnd()
 	setVehicleDetails()

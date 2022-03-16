@@ -7,12 +7,11 @@ import (
 )
 
 type hullProperties struct {
-	code      string
-	tons      int
-	price     int
-	maxHP     int
-	armored   bool
-	hullPanel panel
+	code    string
+	tons    int
+	price   int
+	maxHP   int
+	armored bool
 }
 
 var hull = hullProperties{
@@ -21,48 +20,28 @@ var hull = hullProperties{
 	price:   defaultHullPrice,
 	maxHP:   defaultMaxhardpts,
 	armored: false,
-	hullPanel: panel{
-		change:   nothingAtAll,
-		selects:  make([]*widget.Select, 0),
-		settings: []*widget.Form{},
-		details:  []*widget.Box{},
-	},
 }
 
 var (
-	hullSelect    *widget.Select
-	armoredSelect *widget.Check
-)
-
-var (
+	hullSelect          *widget.Select
 	detailHull          *widget.Label = widget.NewLabel("Hull")
 	detailMaxHardPoints *widget.Label = widget.NewLabel("Hard Points")
+	hullDetails         *widget.Box   = widget.NewVBox(detailHull, detailMaxHardPoints)
 )
 
-var hullDetails *widget.Box
-
-func (h hullProperties) init() {
+func (h *hullProperties) init(form *widget.Form, box *widget.Box) {
 	hullSelect = widget.NewSelect(hullSelectionCode, nothing)
 	hullSelect.Selected = hullSelectionCode[2]
+	form.AppendItem(widget.NewFormItem("hull", hullSelect))
 
-	armoredSelect = widget.NewCheck("Armored bulkheads", hull.armorChanged)
-	armoredSelect.Checked = false
+	box.Children = append(box.Children, hullDetails)
 
-	hull.hullPanel.settings = []*widget.Form{widget.NewForm(
-		widget.NewFormItem("hull", hullSelect),
-		widget.NewFormItem("Armor", armoredSelect),
-	)}
-
-	hull.hullPanel.details = []*widget.Box{widget.NewVBox(detailHull)}
-	hullDetails = hull.hullPanel.details[0]
-
-	h.buildHull()
-	drives.buildDrives()
-	h.buildHardPoints()
+	h.updateHull()
+	h.updateHardPoints()
 	hullSelect.OnChanged = h.hullChanged
 }
 
-func (h hullProperties) armorChanged(armored bool) {
+func (h *hullProperties) armorChanged(armored bool) {
 	hull.armored = armored
 	if armored {
 		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
@@ -71,28 +50,30 @@ func (h hullProperties) armorChanged(armored bool) {
 	}
 }
 
-func (h hullProperties) hullChanged(value string) {
+func (h *hullProperties) hullChanged(value string) {
 	index := getIndexFromHull(value)
 	if index > -1 {
 		hull.code = value
 		hull.tons = hullSelections[index].tons
+		j, m, p := drives.minDrives(value)
+		drives.jumpChanged(TrvIndex[j])
+		drives.maneuverChanged(TrvIndex[m])
+		drives.powerChanged(TrvIndex[p])
 	}
-	h.buildHull()
+	h.updateHull()
 }
 
-func (h hullProperties) tonsChanged(value int) {
+func (h *hullProperties) tonsChanged(value int) {
 	h.tons = value
-	h.buildHull()
-	drives.buildDrives()
-	h.buildHardPoints()
+	h.updateHull()
 }
 
-func (h hullProperties) buildHull() {
+func (h *hullProperties) updateHull() {
 	detailHull.SetText(fmt.Sprintf("Hull %s tons: %d, cost: %d", hull.code, hull.tons, hull.price))
 	detailHull.Refresh()
 }
 
-func (h hullProperties) buildHardPoints() {
+func (h *hullProperties) updateHardPoints() {
 	index := getIndexFromHull(hull.code)
 	if index > -1 {
 		hull.tons = hullSelections[index].tons
@@ -102,7 +83,15 @@ func (h hullProperties) buildHardPoints() {
 	}
 }
 
-func (h hullProperties) getTonnage() {
+func (h *hullProperties) getTonnage() {
+	if hull.armored {
+		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
+	} else {
+		h.tonsChanged(hull.tons)
+	}
+}
+
+func (h *hullProperties) getMCr() {
 	if hull.armored {
 		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
 	} else {
