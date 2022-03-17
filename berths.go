@@ -35,7 +35,7 @@ type berthInfo struct {
 var berths = berthInfo{
 	staterooms:   4,
 	lowBerths:    0,
-	emergencylow: 1,
+	emergencylow: 0,
 	pilots:       1,
 	engineer:     1,
 	stewards:     1,
@@ -74,47 +74,64 @@ var (
 	stw  = widget.NewLabel("Stewards")
 	plt  = widget.NewLabel("Pilots")
 
-	berthDetailsBox = widget.NewVBox(
-		widget.NewLabel("Berths"), low, eLow,
-		// widget.NewLabel("Berths"), room, low, eLow, cmd, brdg, eng, gun, stw,
-	)
-	stateroomSlider    *widget.Slider = widget.NewSlider(0.0, float64(len(lowLevel)))
-	lowBerthSelect                    = widget.NewSelect(lowLevel, nothing)
-	emergencyLowSelect                = widget.NewSelect(lowLevel, nothing)
-	berthsForm                        = widget.NewForm(
+	berthDetailsBox    = widget.NewVBox(room, low, eLow, cmd, brdg, eng, gun, stw)
+	stateroomSlider    = widget.NewSlider(0.0, float64(len(lowLevel)))
+	lowBerthSelect     = widget.NewSelect(lowLevel, nothing)
+	emergencyLowSelect = widget.NewSelect(lowLevel, nothing)
+	berthsForm         = widget.NewForm(
+		widget.NewFormItem("Staterooms", stateroomSlider),
 		widget.NewFormItem("Low Berths", lowBerthSelect),
 		widget.NewFormItem("Emergency Low Berths", emergencyLowSelect))
 )
 
 func (b berthInfo) init(form *widget.Form, box *widget.Box) {
-	none := "0"
-	lowBerthSelect.PlaceHolder = none
-	lowBerthSelect.Selected = none
-	emergencyLowSelect.PlaceHolder = none
-	emergencyLowSelect.Selected = none
-	// stateroomSlider.Value = 4.0
-
-	form.AppendItem(widget.NewFormItem("Berths", berthsForm))
-	box.Children = append(box.Children, berthDetailsBox)
+	stateroomSlider.Value = 4.0
+	stateroomSlider.OnChanged = b.stateroomChanged
+	stateroomSlider.Show()
 	b.adjustSlider()
 
-	stateroomSlider.OnChanged = b.stateroomChanged
+	lowBerthSelect.PlaceHolder = noneString
+	lowBerthSelect.Selected = noneString
 	lowBerthSelect.OnChanged = b.lowBerthsChanged
-	emergencyLowSelect.OnChanged = b.emergencyLowChanged
-}
+	lowBerthSelect.Show()
 
-func berthsSelectsInit() {
+	emergencyLowSelect.PlaceHolder = noneString
+	emergencyLowSelect.Selected = noneString
+	emergencyLowSelect.OnChanged = b.emergencyLowChanged
+	emergencyLowSelect.Show()
+
+	low.Hide()
+	eLow.Hide()
+	cmd.Hide()
+
+	brdg.SetText("1x Navigator")
+	brdg.Show()
+
+	eng.SetText("1x Engineer")
+	eng.Show()
+
+	plt.SetText("1x Pilot")
+	plt.Show()
+
+	stw.SetText("1x Steward")
+	stw.Show()
+
+	form.AppendItem(widget.NewFormItem("Berths", berthsForm))
+
+	box.Children = append(box.Children, berthDetailsBox)
+
 	lowBerthSelect.SetSelected("0")
 	emergencyLowSelect.SetSelected("0")
+	b.stateroomChanged(4.0)
+	b.lowBerthsChanged("0")
+	b.emergencyLowChanged("0")
 }
 
 func (b berthInfo) stateroomChanged(rooms float64) {
 	rooms = math.Floor(rooms + roundUp)
 	if int(rooms) < b.getTotalCrew() {
 		rooms = float64(b.getTotalCrew())
-		ignoreBerthChanges = true
 		stateroomSlider.Value = rooms
-		ignoreBerthChanges = false
 	}
 	b.staterooms = int(rooms)
 	b.buildStaterooms()
@@ -123,52 +140,49 @@ func (b berthInfo) stateroomChanged(rooms float64) {
 }
 
 func (b berthInfo) lowBerthsChanged(value string) {
-	if !ignoreBerthChanges {
-		low, err := strconv.Atoi(value)
-		if err == nil {
-			if low > -1 {
-				b.lowBerths = low
-				b.buildLowBerths()
-				b.buildCrew()
-				//				buildTotal()
-			}
+	low, err := strconv.Atoi(value)
+	if err == nil {
+		if low > -1 {
+			b.lowBerths = low
+			b.buildLowBerths()
+			b.buildCrew()
+			//				buildTotal()
 		}
 	}
 }
 
 func (b berthInfo) emergencyLowChanged(value string) {
-	if !ignoreBerthChanges {
-		elow, err := strconv.Atoi(value)
-		if err == nil {
-			if elow > -1 {
-				b.emergencylow = elow
+	elow, err := strconv.Atoi(value)
+	if err == nil {
+		if elow > -1 {
+			b.emergencylow = elow
+			if elow > 0 {
 				b.buildEmergencyLow()
-				b.buildCrew()
-				//				buildTotal()
 			}
+			b.buildCrew()
+			//				buildTotal()
 		}
 	}
 }
 
 func (b berthInfo) buildStaterooms() {
-	ignoreBerthChanges = true
 	room.SetText(fmt.Sprintf("Staterooms: %d, tons: %d", b.staterooms, 4*b.staterooms))
-	ignoreBerthChanges = false
 	room.Refresh()
 }
 
 func (b berthInfo) buildLowBerths() {
-	ignoreBerthChanges = true
 	low.SetText(fmt.Sprintf("Low berths: %d, tons: %d", b.lowBerths, b.lowBerths/2))
-	ignoreBerthChanges = false
 	low.Refresh()
 }
 
 func (b berthInfo) buildEmergencyLow() {
-	ignoreBerthChanges = true
-	eLow.SetText(fmt.Sprintf("Emergency low berths: %d, tons: %d", b.emergencylow, b.emergencylow))
-	ignoreBerthChanges = false
-	eLow.Refresh()
+	if b.emergencylow > 0 {
+		eLow.SetText(fmt.Sprintf("Emergency low berths: %d, tons: %d", b.emergencylow, b.emergencylow))
+		eLow.Refresh()
+		eLow.Show()
+	} else {
+		eLow.Hide()
+	}
 }
 
 func (b berthInfo) buildCrew() {
@@ -288,16 +302,16 @@ func (b berthInfo) setEngineers() {
 
 func (b berthInfo) refreshEngineeringCrew() {
 	if b.service > 0 {
-		eng.SetText(fmt.Sprintf("%d Engineers, %d Service", b.engineer, b.service))
+		eng.SetText(fmt.Sprintf("%dx Engineers, %dx Service", b.engineer, b.service))
 	} else {
-		eng.SetText(fmt.Sprintf("%d Engineers", b.engineer))
+		eng.SetText(fmt.Sprintf("%dx Engineers", b.engineer))
 	}
 	eng.Refresh()
 }
 
 func (b berthInfo) refreshPilots() {
 	b.pilots = 1 + vehicles.count()
-	plt.SetText(fmt.Sprintf("%d Pilots", b.pilots))
+	plt.SetText(fmt.Sprintf("%dx Pilots", b.pilots))
 	plt.Refresh()
 }
 

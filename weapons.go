@@ -212,7 +212,7 @@ func (w *weaponsDetail) buildMissile() {
 	if weapons.missile > 0 {
 		missiles.SetText(
 			buildAmmoWeaponString("Triple Missile turrets: %d, tons: %d, ammo tons: %d",
-				weapons.missile, int(float32(weapons.missile)+0.9999), int(float32(4*weapons.missile)+0.9999)))
+				weapons.missile, int(float32(weapons.missile)+roundUp), int(float32(4*weapons.missile)+roundUp)))
 		missiles.Show()
 	} else {
 		missiles.Hide()
@@ -284,7 +284,7 @@ func (w *weaponsDetail) buildParticle() {
 	if weapons.accelerator > 0 {
 		particle.SetText(
 			buildWeaponString("Particle Accelerator turrets: %d, tons: %d",
-				weapons.accelerator, int(float32(3*weapons.accelerator)+0.9999)))
+				weapons.accelerator, int(float32(3*weapons.accelerator)+roundUp)))
 		particle.Show()
 	} else {
 		particle.Hide()

@@ -7,26 +7,20 @@ import (
 
 func main() {
 	settings = widget.NewForm()
+	vehicleSettings = widget.NewForm()
 	details = widget.NewVBox()
 
 	a := app.New()
-
 	w := a.NewWindow("Designer")
 
 	hull.init(settings, details)
 	drives.init(settings, details)
 	weapons.init(settings, details)
-	vehicles.init(settings, details)
+	vehicles.init(vehicleSettings, details)
+	berths.init(settings, details)
 
-	berthsSelectsInit()
-	berths.adjustSlider()
-
-	drives.startup()
-
-	ui := widget.NewHBox(settings, details)
-
+	ui := widget.NewHBox(settings, vehicleSettings, details)
 	w.SetContent(ui)
-
 	w.ShowAndRun()
 }
 

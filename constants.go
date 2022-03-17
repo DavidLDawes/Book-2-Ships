@@ -4,6 +4,8 @@ package main
 var (
 	techLevels = []string{"A", "B", "C", "D", "E", "F", "G"}
 
+	noneString = "0"
+
 	// tons - lists the ship tonnage amounts supported by the app
 	tons = []string{
 		"95", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000",

@@ -504,9 +504,7 @@ func (d *driveDetails) init(form *widget.Form, box *widget.Box) {
 	d.jumpChanged(defaultDrive)
 	d.maneuverChanged(defaultDrive)
 	d.powerChanged(defaultDrive)
-}
 
-func (d *driveDetails) startup() {
 	jumpSelect.OnChanged = d.jumpChanged
 	maneuverSelect.OnChanged = d.maneuverChanged
 	powerSelect.OnChanged = d.powerChanged
@@ -642,7 +640,7 @@ func (d *driveDetails) buildFuel() {
 }
 
 func (d *driveDetails) tons() int {
-	return d.j.tons + d.m.tons + d.p.tons + int(d.fuel+0.9999999) // Rounded up
+	return d.j.tons + d.m.tons + d.p.tons + int(d.fuel+roundUp) // Rounded up
 }
 
 func (d *driveDetails) mCr() int {

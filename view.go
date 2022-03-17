@@ -8,6 +8,7 @@ var (
 )
 
 var (
-	settings *widget.Form
-	details  *widget.Box
+	settings        *widget.Form
+	vehicleSettings *widget.Form
+	details         *widget.Box
 )
