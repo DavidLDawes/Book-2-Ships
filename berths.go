@@ -186,7 +186,7 @@ func (b berthInfo) buildEmergencyLow() {
 }
 
 func (b berthInfo) buildCrew() {
-	b.pilots = 1
+	b.pilots = 1 + vehicles.count()
 	b.setEngineers()
 	b.gunners = weapons.countWeapons()
 	b.service = int(hull.tons/1000) * 2

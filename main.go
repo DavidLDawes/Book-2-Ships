@@ -11,7 +11,7 @@ func main() {
 	details = widget.NewVBox()
 
 	a := app.New()
-	w := a.NewWindow("Designer")
+	w := a.NewWindow("Taveller Old School Book 2 Star Ship Designer")
 
 	hull.init(settings, details)
 	drives.init(settings, details)
