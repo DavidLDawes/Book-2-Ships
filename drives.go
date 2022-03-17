@@ -609,7 +609,7 @@ func (d *driveDetails) powerChanged(value string) {
 }
 
 func (d *driveDetails) buildJump() {
-	detailJump.SetText(fmt.Sprintf("Jump Drive %s: J-%d, tons: %d, cost: %d",
+	detailJump.SetText(fmt.Sprintf("Jump Drive %s: J-%d, tons: %d, cost: %d MCr",
 		d.j.code, d.j.perf, d.j.tons, d.j.cost))
 	detailJump.Refresh()
 	//	detailComputer.SetText(fmt.Sprintf("computer %d: %d tons",
@@ -620,7 +620,7 @@ func (d *driveDetails) buildJump() {
 }
 
 func (d *driveDetails) buildManeuver() {
-	detailManeuver.SetText(fmt.Sprintf("Maneuver Drive %s: M-%d, tons: %d, cost: %d",
+	detailManeuver.SetText(fmt.Sprintf("Maneuver Drive %s: M-%d, tons: %d, cost: %d MCr",
 		d.m.code, d.m.perf, d.m.tons, d.m.cost))
 	detailManeuver.Refresh()
 	berths.setEngineers()

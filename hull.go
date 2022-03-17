@@ -43,11 +43,6 @@ func (h *hullProperties) init(form *widget.Form, box *widget.Box) {
 
 func (h *hullProperties) armorChanged(armored bool) {
 	hull.armored = armored
-	if armored {
-		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
-	} else {
-		h.tonsChanged(hull.tons)
-	}
 }
 
 func (h *hullProperties) hullChanged(value string) {
@@ -55,6 +50,7 @@ func (h *hullProperties) hullChanged(value string) {
 	if index > -1 {
 		hull.code = value
 		hull.tons = hullSelections[index].tons
+		hull.price = hullSelections[index].price
 		j, m, p := drives.minDrives(value)
 		drives.jumpChanged(TrvIndex[j])
 		drives.maneuverChanged(TrvIndex[m])
@@ -63,13 +59,8 @@ func (h *hullProperties) hullChanged(value string) {
 	h.updateHull()
 }
 
-func (h *hullProperties) tonsChanged(value int) {
-	h.tons = value
-	h.updateHull()
-}
-
 func (h *hullProperties) updateHull() {
-	detailHull.SetText(fmt.Sprintf("Hull %s tons: %d, cost: %d", hull.code, hull.tons, hull.price))
+	detailHull.SetText(fmt.Sprintf("Hull %s tons: %d, cost: %d MCr", hull.code, hull.tons, hull.price))
 	detailHull.Refresh()
 }
 
@@ -83,18 +74,10 @@ func (h *hullProperties) updateHardPoints() {
 	}
 }
 
-func (h *hullProperties) getTonnage() {
-	if hull.armored {
-		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
-	} else {
-		h.tonsChanged(hull.tons)
-	}
+func (h *hullProperties) getTons() int {
+	return hull.tons
 }
 
-func (h *hullProperties) getMCr() {
-	if hull.armored {
-		h.tonsChanged(int(0.999+10*float32(hull.tons)*1.1) / 10)
-	} else {
-		h.tonsChanged(hull.tons)
-	}
+func (h *hullProperties) getMCr() int {
+	return hull.price
 }

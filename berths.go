@@ -81,7 +81,6 @@ var (
 	stateroomSlider    *widget.Slider = widget.NewSlider(0.0, float64(len(lowLevel)))
 	lowBerthSelect                    = widget.NewSelect(lowLevel, nothing)
 	emergencyLowSelect                = widget.NewSelect(lowLevel, nothing)
-	ignoreBerthChanges                = false
 	berthsForm                        = widget.NewForm(
 		widget.NewFormItem("Low Berths", lowBerthSelect),
 		widget.NewFormItem("Emergency Low Berths", emergencyLowSelect))
@@ -297,7 +296,7 @@ func (b berthInfo) refreshEngineeringCrew() {
 }
 
 func (b berthInfo) refreshPilots() {
-	b.pilots = 1 + countVehicles()
+	b.pilots = 1 + vehicles.count()
 	plt.SetText(fmt.Sprintf("%d Pilots", b.pilots))
 	plt.Refresh()
 }

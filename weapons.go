@@ -322,6 +322,7 @@ func buildWeaponString(weaponDescription string, count int, tons int) string {
 	if count > 0 {
 		return fmt.Sprintf(weaponDescription, count, int(float32(tons)))
 	}
+
 	return ""
 }
 
@@ -329,5 +330,6 @@ func buildAmmoWeaponString(weaponAmmoDescription string, count int, tons int, am
 	if count > 0 {
 		return fmt.Sprintf(weaponAmmoDescription, count, tons, int(.999+float32(ammoTons)))
 	}
+
 	return ""
 }

@@ -1,15 +1,17 @@
 package main
 
 // techLevels - lists the tech levels supported by the app
-var techLevels = []string{"A", "B", "C", "D", "E", "F", "G"}
+var (
+	techLevels = []string{"A", "B", "C", "D", "E", "F", "G"}
 
-// tons - lists the ship tonnage amounts supported by the app
-var tons = []string{
-	"95", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000",
-	"1100", "1200", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000",
-	"4000", "6000", "8000", "10000", "20000", "40000", "60000", "80000", "100000",
-	"250000", "500000", "1000000",
-}
+	// tons - lists the ship tonnage amounts supported by the app
+	tons = []string{
+		"95", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000",
+		"1100", "1200", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000",
+		"4000", "6000", "8000", "10000", "20000", "40000", "60000", "80000", "100000",
+		"250000", "500000", "1000000",
+	}
+)
 
 type hullSelection struct {
 	code  string
@@ -133,4 +135,22 @@ const (
 	defaultMaxhardpts = 2
 	defaultHullPrice  = 8
 	roundUp           = 0.999999
+
+	// Vehicles
+	vehicleTypes      = "Vehicles, Boats & Fighters"
+	wATVType          = "Wheeled ATV"
+	tATVType          = "Tracked ATV"
+	airRaftType       = "Air Raft"
+	speederType       = "Speeder"
+	gCarrierType      = "GCarrier"
+	shipsLaunchType   = "Ship's Launch"
+	shipsBoatType     = "Ship's Boat"
+	pinnaceType       = "Pinnace"
+	cutterType        = "Modular Cutter"
+	slowBoatType      = "Slow Boat"
+	slowPinnaceType   = "Slow Pinnace"
+	shuttleType       = "Shuttle"
+	lightFighterType  = "Light Fighter"
+	mediumFighterType = "Medium Fighter"
+	heavyFighterType  = "Heavy Fighter"
 )
