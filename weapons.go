@@ -18,13 +18,13 @@ type weaponsDetail struct {
 }
 
 var (
-	missiles      = widget.NewLabel("Missile Turrets")
+	missiles      = widget.NewLabel("Missile Launchers")
 	beamLasers    = widget.NewLabel("Beam Laser Turrets")
 	pulseLasers   = widget.NewLabel("Pulse Laser Turrets")
 	fusion        = widget.NewLabel("Fusion Guns")
-	sand          = widget.NewLabel("Sandcaster Turrets")
+	sand          = widget.NewLabel("Sandcasters")
 	plasma        = widget.NewLabel("Plasma Guns")
-	particle      = widget.NewLabel("Particle Beams")
+	particle      = widget.NewLabel("Particle Beam Accelerators")
 	weaponDetails = widget.NewVBox(missiles, beamLasers, pulseLasers, fusion, sand, particle)
 
 	missilesSelect = widget.NewSelect(weaponLevel, nothing)
@@ -36,12 +36,12 @@ var (
 	particleSelect = widget.NewSelect(weaponLevel, nothing)
 
 	missileItem  = widget.NewFormItem("Missiles", missilesSelect)
-	beamItem     = widget.NewFormItem("Beam Laser Turrets", beamSelect)
-	pulseItem    = widget.NewFormItem("Pulse Laser Turrets", pulseSelect)
-	fusionItem   = widget.NewFormItem("Fusion Guns", fusionSelect)
-	sandItem     = widget.NewFormItem("Sand Caster Turrets", sandSelect)
-	plasmaItem   = widget.NewFormItem("Plasma Guns", plasmaSelect)
-	particleItem = widget.NewFormItem("Particle Beam Accelerators", particleSelect)
+	beamItem     = widget.NewFormItem("Beam Lasers", beamSelect)
+	pulseItem    = widget.NewFormItem("Pulse Lasers", pulseSelect)
+	fusionItem   = widget.NewFormItem("Fusion", fusionSelect)
+	sandItem     = widget.NewFormItem("Sand", sandSelect)
+	plasmaItem   = widget.NewFormItem("Plasma", plasmaSelect)
+	particleItem = widget.NewFormItem("Particle Beams", particleSelect)
 
 	weaponForm = widget.NewForm(
 		missileItem, beamItem, pulseItem, fusionItem, sandItem, plasmaItem, particleItem,
@@ -90,120 +90,43 @@ func (w *weaponsDetail) init(form *widget.Form, box *widget.Box) {
 }
 
 func (w *weaponsDetail) missileChanged(value string) {
-	missileLaunchers, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.missile = missileLaunchers
-		if w.countWeapons() > hull.maxHP {
-			weapons.missile = missileLaunchers - w.countWeapons() + hull.maxHP
-		} else if weapons.missile < 0 {
-			weapons.missile = 0
-		}
-		if weapons.missile != missileLaunchers {
-			missilesSelect.SetSelected(strconv.Itoa(weapons.missile))
-		}
-	}
+	w.weaponChanged(missilesSelect, "Missile Launcher", value, &weapons.missile)
 	w.buildMissile()
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) beamChanged(value string) {
-	beamTurrets, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.beam = beamTurrets
-		if w.countWeapons() > hull.maxHP {
-			weapons.beam = beamTurrets - w.countWeapons() + hull.maxHP
-			if weapons.beam < 0 {
-				weapons.beam = 0
-			}
-			beamSelect.SetSelected(strconv.Itoa(weapons.beam))
-		}
-	}
+	w.weaponChanged(beamSelect, "Beam Laser Turret", value, &weapons.pulse)
 	w.buildBeam()
-	if weapons.missile > 0 {
-		missiles.SetText(fmt.Sprintf("Missile Turrets: %d", weapons.missile))
-		missiles.Show()
-	} else {
-		missiles.Hide()
-	}
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) pulseChanged(value string) {
-	pulse, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.pulse = pulse
-		if w.countWeapons() > hull.maxHP {
-			weapons.pulse = pulse - w.countWeapons() + hull.maxHP
-			if weapons.pulse < 0 {
-				weapons.pulse = 0
-			}
-			pulseSelect.SetSelected(strconv.Itoa(weapons.pulse))
-		}
-	}
+	w.weaponChanged(pulseSelect, "Pulse Laser Turret", value, &weapons.pulse)
 	w.buildPulse()
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) fusionChanged(value string) {
-	fusion, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.fusion = fusion
-		if w.countWeapons() > hull.maxHP {
-			weapons.fusion = fusion - w.countWeapons() + hull.maxHP
-			if weapons.fusion < 0 {
-				weapons.fusion = 0
-			}
-			fusionSelect.SetSelected(strconv.Itoa(weapons.fusion))
-		}
-	}
+	w.weaponChanged(fusionSelect, "Fusion Gun", value, &weapons.fusion)
 	w.buildFusion()
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) sandChanged(value string) {
-	sand, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.sandcaster = sand
-		if w.countWeapons() > hull.maxHP {
-			weapons.sandcaster = sand - w.countWeapons() + hull.maxHP
-			if weapons.sandcaster < 0 {
-				weapons.sandcaster = 0
-			}
-			sandSelect.SetSelected(strconv.Itoa(weapons.sandcaster))
-		}
-	}
+	w.weaponChanged(sandSelect, "Sand Caster", value, &weapons.sandcaster)
 	w.buildSand()
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) plasmaChanged(value string) {
-	plasma, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.plasma = plasma
-		if w.countWeapons() > hull.maxHP {
-			weapons.plasma = plasma - w.countWeapons() + hull.maxHP
-			if weapons.plasma < 0 {
-				weapons.plasma = 0
-			}
-			plasmaSelect.SetSelected(strconv.Itoa(weapons.plasma))
-		}
-	}
+	w.weaponChanged(plasmaSelect, "Plasma Gun", value, &weapons.plasma)
 	w.buildPlasma()
 	berths.buildCrew()
 }
 
 func (w *weaponsDetail) particleChanged(value string) {
-	particle, err := strconv.Atoi(value)
-	if err == nil {
-		weapons.accelerator = particle
-		if w.countWeapons() > hull.maxHP {
-			weapons.accelerator = particle - w.countWeapons() + hull.maxHP
-			if weapons.accelerator < 0 {
-				weapons.accelerator = 0
-			}
-			particleSelect.SetSelected(strconv.Itoa(weapons.accelerator))
-		}
-	}
+	w.weaponChanged(particleSelect, "Particle Beam Accelerator", value, &weapons.accelerator)
 	w.buildParticle()
 	berths.buildCrew()
 }
@@ -211,8 +134,8 @@ func (w *weaponsDetail) particleChanged(value string) {
 func (w *weaponsDetail) buildMissile() {
 	if weapons.missile > 0 {
 		missiles.SetText(
-			buildAmmoWeaponString("Triple Missile turrets: %d, tons: %d, ammo tons: %d",
-				weapons.missile, int(float32(weapons.missile)+roundUp), int(float32(4*weapons.missile)+roundUp)))
+			buildAmmoWeaponString("Dual Missile Launchers x %d, tons: %d, cost %dMCr",
+				weapons.missile, 2*int(float32(weapons.missile)+roundUp), int(float32(4*weapons.missile)+roundUp)))
 		missiles.Show()
 	} else {
 		missiles.Hide()
@@ -223,7 +146,7 @@ func (w *weaponsDetail) buildMissile() {
 func (w *weaponsDetail) buildBeam() {
 	if weapons.beam > 0 {
 		beamLasers.SetText(
-			buildWeaponString("Triple Beam laser turrets: %d, tons: %d",
+			buildWeaponString("Triple Beam Laser Turrets x %d, tons: %d",
 				weapons.beam, int(float32(weapons.beam)+.9999)))
 		beamLasers.Show()
 	} else {
@@ -235,7 +158,7 @@ func (w *weaponsDetail) buildBeam() {
 func (w *weaponsDetail) buildPulse() {
 	if weapons.pulse > 0 {
 		pulseLasers.SetText(
-			buildWeaponString("Triple Pulse lasr turrets: %d, tons: %d",
+			buildWeaponString("Triple Pulse Laser Turrets x %d, tons: %d",
 				weapons.pulse, int(float32(weapons.pulse)+.9999)))
 		pulseLasers.Show()
 	} else {
@@ -247,7 +170,7 @@ func (w *weaponsDetail) buildPulse() {
 func (w *weaponsDetail) buildPlasma() {
 	if weapons.plasma > 0 {
 		plasma.SetText(
-			buildWeaponString("Double Plasma gun turrets: %d, tons: %d",
+			buildWeaponString("Double Plasma Guns x %d, tons: %d",
 				weapons.plasma, int(float32(2*weapons.plasma)+.9999)))
 		plasma.Show()
 	} else {
@@ -259,7 +182,7 @@ func (w *weaponsDetail) buildPlasma() {
 func (w *weaponsDetail) buildFusion() {
 	if weapons.fusion > 0 {
 		fusion.SetText(
-			buildWeaponString("Double Fusion gun turrets: %d, tons: %d",
+			buildWeaponString("Double Fusion Guns x %d, tons: %d",
 				weapons.fusion, int(float32(2*weapons.fusion)+.9999)))
 		fusion.Show()
 	} else {
@@ -271,7 +194,7 @@ func (w *weaponsDetail) buildFusion() {
 func (w *weaponsDetail) buildSand() {
 	if weapons.sandcaster > 0 {
 		sand.SetText(
-			buildAmmoWeaponString("Triple Sandcaster turrets: %d, tons: %d, ammo tons: %d",
+			buildAmmoWeaponString("Triple Sandcasters x %d, tons: %d, ammo tons: %d",
 				weapons.sandcaster, int(float32(weapons.sandcaster)/2.0+.9999), int(float32(weapons.sandcaster)+.9999)))
 		sand.Show()
 	} else {
@@ -283,7 +206,7 @@ func (w *weaponsDetail) buildSand() {
 func (w *weaponsDetail) buildParticle() {
 	if weapons.accelerator > 0 {
 		particle.SetText(
-			buildWeaponString("Particle Accelerator turrets: %d, tons: %d",
+			buildWeaponString("Particle Beam Accelerator x %d, tons: %d",
 				weapons.accelerator, int(float32(3*weapons.accelerator)+roundUp)))
 		particle.Show()
 	} else {
@@ -332,4 +255,21 @@ func buildAmmoWeaponString(weaponAmmoDescription string, count int, tons int, am
 	}
 
 	return ""
+}
+
+func (w *weaponsDetail) weaponChanged(selector *widget.Select, description string, value string, setting *int) {
+	weaponsCount, err := strconv.Atoi(value)
+	if err == nil {
+		if weaponsCount < 0 {
+			weaponsCount = 0
+		}
+		*setting = weaponsCount
+		if w.countWeapons() > hull.maxHP {
+			*setting = weaponsCount - w.countWeapons() + hull.maxHP
+			if *setting < 0 {
+				*setting = 0
+			}
+			selector.SetSelected(strconv.Itoa(*setting))
+		}
+	}
 }

@@ -17,6 +17,7 @@ var vehicleMap = map[string]vehicleDef{
 	tATVType:          {10, 0.03},
 	airRaftType:       {4, 0.6},
 	speederType:       {6, 1.0},
+	gCarrierType:      {8, 1.0},
 	shipsLaunchType:   {20, 14.0},
 	shipsBoatType:     {30, 16.0},
 	pinnaceType:       {40, 20.0},
@@ -267,51 +268,51 @@ func (v *vehicleDetails) hvyFighterChanged(value string) {
 }
 
 func (v *vehicleDetails) count() int {
-	result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCar +
-		vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat +
-		vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
+	result := v.atvWheel + v.atvTrack + v.airRaft + v.speeder + v.gCar +
+		v.launch + v.shipsBoat + v.pinnace + v.cutter + v.slowBoat +
+		v.slowPinnace + +v.shuttle + v.ltFighter + v.medFighter + v.hvyFighter
 
 	return result
 }
 
-func (v *vehicleDetails) tons() int {
-	result := vehicles.atvWheel*vehicleMap[wATVType].vehicleTons +
-		vehicles.atvTrack*vehicleMap[tATVType].vehicleTons +
-		vehicles.airRaft*vehicleMap[airRaftType].vehicleTons +
-		vehicles.speeder*vehicleMap[speederType].vehicleTons +
-		vehicles.gCar*vehicleMap[gCarrierType].vehicleTons +
-		vehicles.launch*vehicleMap[shipsLaunchType].vehicleTons +
-		vehicles.shipsBoat*vehicleMap[shipsBoatType].vehicleTons +
-		vehicles.pinnace*vehicleMap[pinnaceType].vehicleTons +
-		vehicles.cutter*vehicleMap[cutterType].vehicleTons +
-		vehicles.slowBoat*vehicleMap[slowBoatType].vehicleTons +
-		vehicles.slowPinnace*vehicleMap[slowPinnaceType].vehicleTons +
-		vehicles.shuttle*vehicleMap[shuttleType].vehicleTons +
-		vehicles.ltFighter*vehicleMap[lightFighterType].vehicleTons +
-		vehicles.medFighter*vehicleMap[mediumFighterType].vehicleTons +
-		vehicles.hvyFighter*vehicleMap[heavyFighterType].vehicleTons
+func (v *vehicleDetails) tons() (result int) {
+	result = v.atvWheel*vehicleMap[wATVType].vehicleTons +
+		v.atvTrack*vehicleMap[tATVType].vehicleTons +
+		v.airRaft*vehicleMap[airRaftType].vehicleTons +
+		v.speeder*vehicleMap[speederType].vehicleTons +
+		v.gCar*vehicleMap[gCarrierType].vehicleTons +
+		v.launch*vehicleMap[shipsLaunchType].vehicleTons +
+		v.shipsBoat*vehicleMap[shipsBoatType].vehicleTons +
+		v.pinnace*vehicleMap[pinnaceType].vehicleTons +
+		v.cutter*vehicleMap[cutterType].vehicleTons +
+		v.slowBoat*vehicleMap[slowBoatType].vehicleTons +
+		v.slowPinnace*vehicleMap[slowPinnaceType].vehicleTons +
+		v.shuttle*vehicleMap[shuttleType].vehicleTons +
+		v.ltFighter*vehicleMap[lightFighterType].vehicleTons +
+		v.medFighter*vehicleMap[mediumFighterType].vehicleTons +
+		v.hvyFighter*vehicleMap[heavyFighterType].vehicleTons
 
-	return result
+	return
 }
 
-func (v *vehicleDetails) mCr() float32 {
-	result := float32(vehicles.atvWheel)*vehicleMap[wATVType].vehicleCost +
-		float32(vehicles.atvTrack)*vehicleMap[tATVType].vehicleCost +
-		float32(vehicles.airRaft)*vehicleMap[airRaftType].vehicleCost +
-		float32(vehicles.speeder)*vehicleMap[speederType].vehicleCost +
-		float32(vehicles.gCar)*vehicleMap[gCarrierType].vehicleCost +
-		float32(vehicles.launch)*vehicleMap[shipsLaunchType].vehicleCost +
-		float32(vehicles.shipsBoat)*vehicleMap[shipsBoatType].vehicleCost +
-		float32(vehicles.pinnace)*vehicleMap[pinnaceType].vehicleCost +
-		float32(vehicles.cutter)*vehicleMap[cutterType].vehicleCost +
-		float32(vehicles.slowBoat)*vehicleMap[slowBoatType].vehicleCost +
-		float32(vehicles.slowPinnace)*vehicleMap[slowPinnaceType].vehicleCost +
-		float32(vehicles.shuttle)*vehicleMap[shuttleType].vehicleCost +
-		float32(vehicles.ltFighter)*vehicleMap[lightFighterType].vehicleCost +
-		float32(vehicles.medFighter)*vehicleMap[mediumFighterType].vehicleCost +
-		float32(vehicles.hvyFighter)*vehicleMap[heavyFighterType].vehicleCost
+func (v *vehicleDetails) mCr() (result32 float32) {
+	result32 = float32(v.atvWheel)*vehicleMap[wATVType].vehicleCost +
+		float32(v.atvTrack)*vehicleMap[tATVType].vehicleCost +
+		float32(v.airRaft)*vehicleMap[airRaftType].vehicleCost +
+		float32(v.speeder)*vehicleMap[speederType].vehicleCost +
+		float32(v.gCar)*vehicleMap[gCarrierType].vehicleCost +
+		float32(v.launch)*vehicleMap[shipsLaunchType].vehicleCost +
+		float32(v.shipsBoat)*vehicleMap[shipsBoatType].vehicleCost +
+		float32(v.pinnace)*vehicleMap[pinnaceType].vehicleCost +
+		float32(v.cutter)*vehicleMap[cutterType].vehicleCost +
+		float32(v.slowBoat)*vehicleMap[slowBoatType].vehicleCost +
+		float32(v.slowPinnace)*vehicleMap[slowPinnaceType].vehicleCost +
+		float32(v.shuttle)*vehicleMap[shuttleType].vehicleCost +
+		float32(v.ltFighter)*vehicleMap[lightFighterType].vehicleCost +
+		float32(v.medFighter)*vehicleMap[mediumFighterType].vehicleCost +
+		float32(v.hvyFighter)*vehicleMap[heavyFighterType].vehicleCost
 
-	return result
+	return
 }
 
 /*
@@ -397,5 +398,6 @@ func vehicleChanged(detail *widget.Label, description string, value string, sett
 			detail.SetText("")
 			detail.Hide()
 		}
+		summary.update()
 	}
 }

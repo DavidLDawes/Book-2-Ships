@@ -18,6 +18,8 @@ func main() {
 	weapons.init(settings, details)
 	vehicles.init(vehicleSettings, details)
 	berths.init(settings, details)
+	summary.init(settings, details)
+	summary.update()
 
 	ui := widget.NewHBox(settings, vehicleSettings, details)
 	w.SetContent(ui)
@@ -31,6 +33,9 @@ func loadMe() {
 }
 
 func nothing(value string) {
+}
+
+func nothing64(value float64) {
 }
 
 func nothingAtAll() {

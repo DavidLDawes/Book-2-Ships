@@ -32,29 +32,7 @@ type berthInfo struct {
 	roboService  int
 }
 
-var berths = berthInfo{
-	staterooms:   4,
-	lowBerths:    0,
-	emergencylow: 0,
-	pilots:       1,
-	engineer:     1,
-	stewards:     1,
-	roboStewards: 0,
-	navigator:    1,
-	medic:        0,
-	gunners:      0,
-	roboGunners:  0,
-	exec:         0,
-	command:      0,
-	computer:     0,
-	comms:        0,
-	support:      0,
-	roboSupport:  0,
-	security:     0,
-	roboSecurity: 0,
-	service:      0,
-	roboService:  0,
-}
+var berths = berthInfo{}
 
 var (
 	lowLevel = []string{
@@ -85,6 +63,12 @@ var (
 )
 
 func (b berthInfo) init(form *widget.Form, box *widget.Box) {
+	berths.staterooms = 4
+	berths.pilots = 1
+	berths.engineer = 1
+	berths.stewards = 1
+	berths.navigator = 1
+
 	stateroomSlider.Value = 4.0
 	stateroomSlider.OnChanged = b.stateroomChanged
 	stateroomSlider.Show()
@@ -128,6 +112,7 @@ func (b berthInfo) init(form *widget.Form, box *widget.Box) {
 }
 
 func (b berthInfo) stateroomChanged(rooms float64) {
+	stateroomSlider.OnChanged = nothing64
 	rooms = math.Floor(rooms + roundUp)
 	if int(rooms) < b.getTotalCrew() {
 		rooms = float64(b.getTotalCrew())
@@ -136,7 +121,8 @@ func (b berthInfo) stateroomChanged(rooms float64) {
 	b.staterooms = int(rooms)
 	b.buildStaterooms()
 	b.buildCrew()
-	//	buildTotal()
+	summary.update()
+	stateroomSlider.OnChanged = b.stateroomChanged
 }
 
 func (b berthInfo) lowBerthsChanged(value string) {
@@ -146,7 +132,7 @@ func (b berthInfo) lowBerthsChanged(value string) {
 			b.lowBerths = low
 			b.buildLowBerths()
 			b.buildCrew()
-			//				buildTotal()
+			summary.update()
 		}
 	}
 }
@@ -160,7 +146,7 @@ func (b berthInfo) emergencyLowChanged(value string) {
 				b.buildEmergencyLow()
 			}
 			b.buildCrew()
-			//				buildTotal()
+			summary.update()
 		}
 	}
 }
@@ -284,6 +270,7 @@ func (b berthInfo) buildCrew() {
 		stw.SetText(fmt.Sprintf("%d Stewards", b.stewards))
 	}
 	stw.Refresh()
+	summary.update()
 }
 
 func (b berthInfo) buildBerths() {
@@ -316,7 +303,7 @@ func (b berthInfo) refreshPilots() {
 }
 
 func (b berthInfo) adjustSlider() {
-	maxStaterooms := float64(b.remainingTons() / 4.0)
+	maxStaterooms := float64(summary.cargo) / 4.0
 	minStaterooms := b.getTotalCrew()
 	stateroomSlider.Min = float64(minStaterooms)
 	stateroomSlider.Max = float64(maxStaterooms)
@@ -332,8 +319,8 @@ func (b berthInfo) getTotalRobots() int {
 	return b.roboGunners + b.roboSecurity + b.roboService + b.roboStewards + b.roboSupport
 }
 
-func (b berthInfo) tons() int {
-	return 4*b.staterooms + (b.lowBerths+1)/2
+func (b berthInfo) tons() float32 {
+	return 4.0*float32(b.staterooms) + float32(b.lowBerths)/2 + float32(b.emergencylow)
 }
 
 func (b berthInfo) setStewards() {
@@ -342,8 +329,6 @@ func (b berthInfo) setStewards() {
 	b.stewards = (6 + b.getTotalCrew()) / 7
 }
 
-func (b berthInfo) remainingTons() (tonsRemaining int) {
-	tonsRemaining = hull.tons - weapons.tons() - drives.tons() - b.tons()
-
-	return
+func (b berthInfo) mCr() float32 {
+	return float32(berths.staterooms)*0.5 + float32(berths.emergencylow)*0.1 + float32(berths.lowBerths)*0.05
 }

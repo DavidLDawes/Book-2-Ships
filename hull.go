@@ -62,6 +62,7 @@ func (h *hullProperties) hullChanged(value string) {
 func (h *hullProperties) updateHull() {
 	detailHull.SetText(fmt.Sprintf("Hull %s tons: %d, cost: %d MCr", hull.code, hull.tons, hull.price))
 	detailHull.Refresh()
+	summary.update()
 }
 
 func (h *hullProperties) updateHardPoints() {
@@ -71,6 +72,7 @@ func (h *hullProperties) updateHardPoints() {
 		hull.maxHP = hull.tons / 100
 		detailMaxHardPoints.SetText(fmt.Sprintf("Maximum Hardpoints: %d", hull.maxHP))
 		detailMaxHardPoints.Refresh()
+		summary.update()
 	}
 }
 

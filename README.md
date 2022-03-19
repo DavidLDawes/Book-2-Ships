@@ -33,15 +33,19 @@ If the build step above works, simply run ship-ui from the same top level projec
 To exit hit < Command >q on Mac, < Alt > F4 on Windows, and perhaps <Ctrl>C from the bash script in Linux? Only been running on Mac so far.
 
 ##Current State
-Drives and hulls are pretty well plumbed in, I think. Limited to available options per hull, showing tonnage, cost and performance.   The UI properly limits you to selecting usable drives, it would be better to process things and change the drop down to only show selectable drives for the given hull, but for now it ignores impossible requests.
+**Drives and hulls** are pretty well plumbed in. Limited to available options per hull, showing tonnage, cost and performance.   The UI properly limits you to selecting usable drives, it would be better to process things and change the drop down to only show selectable drives for the given hull, but for now it ignores impossible requests. Sorta. Suspicious the table (sparse matrix) is not quite right, I include 300, 500, 700 & 900 ton options that are not in the table & I am not sure I have that implemnented properly. Also the code the fixes engines when you change hull size seems only to apply to power plants so far, need to fix that bug by including jump & maneuver in the correction(s).
 
-Vehicles can be fiddled with, not reporting any tonnage or cost yet.
+**Vehicles** are in, reporting extended tonnage & cost. Dang, need to add like a 15% berthing overhead for vehicles, that is still missing. 
 
-Berths are partially there, Staterooms slider not working though. Low and Emergency Low berths can be configured and I think it shows tonnage, need to add costs.
+**Berths** are partially there, Staterooms slider not working though; it updates the detail text but not the Summary (so total tonnage & cost does not change when it should), that bug is kicking my butt. It appears to be 2 of the berth static items that I only allocate one of, probably using values rather than pointers or something dumb like that. Also not showing total cost yet for staterooms.
 
-I don't think armored bulkheads are supported properly.
+Missing computer, sensors, comms, bridge
 
-Weapons can be sleected in various numbers per weapon, not dsure what it reports for those.
+Low and Emergency Low berths can be configured and I think it shows tonnage, need to add costs.
+
+No armor, no armored bulkheads, broken stateroom/berth accounting.
+
+Weapons can be sleected in various numbers per weapon up to hard point limit (ship tons/100). Shows extended tonnage and cost for weapons & updates summary properly.
 ## Goals
 I'd like to get all of the selectable options enhanced to show tonnage and cost, and ideally effect (i.e., drives show P-2 etc., Lasers show cost, tonnage and USP value, diutto for missiles).
 
